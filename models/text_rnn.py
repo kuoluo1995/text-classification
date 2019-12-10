@@ -1,12 +1,12 @@
 import tensorflow as tf
-from models.cnn_model import TextCNN
+from models.text_cnn import TextCNN
 
 
 class TextRNN(TextCNN):
     def __init__(self, rnn_type, num_layers, **kwargs):
-        TextCNN.__init__(self, **kwargs)
-        self.cell = self.gru_cell() if rnn_type == 'gru' else self.lstm_cell()
         self.num_layers = num_layers
+        self.cell = self.gru_cell() if rnn_type == 'gru' else self.lstm_cell()
+        TextCNN.__init__(self, **kwargs)
 
     def lstm_cell(self):  # lstm核
         return tf.nn.rnn_cell.BasicLSTMCell(self.num_filters, state_is_tuple=True)

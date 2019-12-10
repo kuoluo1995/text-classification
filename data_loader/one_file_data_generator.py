@@ -78,9 +78,9 @@ class DataGenerator2:
 
 
 if __name__ == '__main__':
-    dataset_info = yaml_utils.read('dataset/cnews/info.yaml')
+    dataset_info = yaml_utils.read('../dataset/cnews/info.yaml')
     dictionary = yaml_utils.read(dataset_info['dictionary_path'])
     train_dataset = yaml_utils.read(dataset_info['eval_path'])
     print('读取完毕')
-    data_generator = DataGenerator(dictionary, True, train_dataset, 32, 600)
+    data_generator = OneFileDataGenerator(dictionary, True, train_dataset, 32, 600)
     batch_input, batch_label = next(data_generator.get_data_generator())

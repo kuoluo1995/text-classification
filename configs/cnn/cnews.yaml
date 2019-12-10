@@ -9,7 +9,7 @@ dataset:
     seq_length: 600  # 序列长度
 
 model:
-    name: TextCNN
+    name: text_cnn
     checkpoint_dir: ./_checkpoint
     embedding_dim: 64  # 词向量维度
     num_filters: 256  # 卷积核数目

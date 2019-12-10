@@ -11,7 +11,6 @@ output_path = output_dir / dataset_name
 
 
 def read_data(path):
-    print('导入数据:{}'.format(path))
     data_path = Path(path)
     contents = []
     with data_path.open(mode='r', encoding='UTF-8') as file:
@@ -76,6 +75,6 @@ if __name__ == '__main__':
         for item in type.iterdir():
             content = read_data(str(item))
             contents.extend(content)
-            dataset.append({'content': str(item), 'label': type.name})
+            dataset.append({'input': str(item), 'label': type.name})
     build_dictionary(contents, class_type)
     build_dataset(dataset, len(class_type))
