@@ -3,6 +3,7 @@ save_freq: 1 # 每多少轮存入 tensorboard
 batch_size: 64 # 每批训练大小
 
 dataset:
+    data_generator: cnews_data_generator
     dataset_name: cnews
     path: dataset/cnews/info.yaml
     seq_length: 600  # 序列长度

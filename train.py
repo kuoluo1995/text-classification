@@ -1,6 +1,7 @@
 import tensorflow as tf
 
-from data_loader import DataGenerator
+from data_loader import get_data_loader_by_name
+from models import get_model_class_by_name
 from models.cnn_model import TextCNN
 from utils import yaml_utils
 from utils.config_utils import get_config
@@ -20,13 +21,15 @@ def train(args):
         eval_dataset = yaml_utils.read(dataset_info['eval_path'])
         print('导入数据验证数据完成')
         print('导入完成')
-        train_data_generator = DataGenerator(dictionary, True, train_dataset, batch_size=args['batch_size'],
-                                             seq_length=args['dataset']['seq_length'])
+        data_loader = get_data_loader_by_name(args['dataset']['data_generator'])
+        train_data_generator = data_loader(dictionary, True, train_dataset, batch_size=args['batch_size'],
+                                           seq_length=args['dataset']['seq_length'])
 
-        eval_data_generator = DataGenerator(dictionary, False, eval_dataset, batch_size=args['batch_size'],
-                                            seq_length=args['dataset']['seq_length'])
-        model = TextCNN(sess=sess, train_generator=train_data_generator, eval_generator=eval_data_generator,
-                        **dataset_info, **args['dataset'], **args['model'], **args)
+        eval_data_generator = data_loader(dictionary, False, eval_dataset, batch_size=args['batch_size'],
+                                          seq_length=args['dataset']['seq_length'])
+        model_class = get_model_class_by_name(args['model']['name'])
+        model = model_class(sess=sess, train_generator=train_data_generator, eval_generator=eval_data_generator,
+                            **dataset_info, **args['dataset'], **args['model'], **args)
         model.train()
 
 

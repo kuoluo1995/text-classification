@@ -1,6 +1,7 @@
 import tensorflow as tf
 
-from data_loader import DataGenerator
+from data_loader import get_data_loader_by_name
+from models import get_model_class_by_name
 from models.cnn_model import TextCNN
 from utils import yaml_utils
 from utils.config_utils import get_config
@@ -20,18 +21,20 @@ def evaluate_model(args):
         test_dataset = yaml_utils.read(dataset_info['eval_path'])
         print('导入测试数据完成')
         print('导入完成')
-        eval_data_generator = DataGenerator(dictionary, False, test_dataset, batch_size=args['batch_size'],
-                                            seq_length=args['dataset']['seq_length'],
-                                            reverse_dictionary=reverse_dictionary)
+        data_loader = get_data_loader_by_name(args['dataset']['data_generator'])
+        eval_data_generator = data_loader(dictionary, False, test_dataset, batch_size=args['batch_size'],
+                                          seq_length=args['dataset']['seq_length'],
+                                          reverse_dictionary=reverse_dictionary)
         eval_data_generator.get_reverse_dictionary()
-        model = TextCNN(sess=sess, train_generator=None, eval_generator=eval_data_generator,
-                        **dataset_info, **args['dataset'], **args['model'], **args)
+        model_class = get_model_class_by_name(args['model']['name'])
+        model = model_class(sess=sess, train_generator=None, eval_generator=eval_data_generator,
+                            **dataset_info, **args['dataset'], **args['model'], **args)
         result = model.test()
         yaml_utils.write(args['model']['checkpoint_dir'] + '/' + args['dataset']['dataset_name'] + '/' +
                          args['model']['name'] + '/' + args['tag'] + '/' + 'best_result.yaml', result)
 
 
 if __name__ == '__main__':
-    config = get_config('cnn/cnews')
+    config = get_config('rnn/cnews')
     config['tag'] = 'base'
     evaluate_model(config)
