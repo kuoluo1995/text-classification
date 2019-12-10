@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 from collections import Counter
 from pathlib import Path
@@ -17,6 +19,8 @@ def read_data(path):
         for line in file:
             while '\n' in line:
                 line = line.replace('\n', '')
+            while '<br />' in line:
+                line = line.replace('<br />', '')
             if len(line) > 0:
                 contents.append(line)
     return contents

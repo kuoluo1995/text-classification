@@ -30,7 +30,7 @@ class MultipleFileDataGenerator:
         for i in word_ids:
             if i == 0:
                 continue
-            result += self.reverse_dictionary[i]
+            result += ' '+self.reverse_dictionary[i]
         return result
 
     def get_batch_size(self):

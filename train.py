@@ -33,6 +33,7 @@ def train(args):
 
 
 if __name__ == '__main__':
-    config = get_config('rnn/cnews_voc')
+    config = get_config('rnn/aclImdb')
     config['tag'] = 'base'
+    # config['model']['num_layers'] = 3
     train(config)
