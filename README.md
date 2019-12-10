@@ -146,18 +146,27 @@ tensorboard --logdir=../tensorboard_logs
 ### 3.1 训练后验证的结果
 #### 3.1.1 中文数据集的结果
 1. 字典:
-1.1 cnn: 参考 ```result/```
-1.2 rnn:
+1.1 cnn: ```result/cnews_cnn.yaml```
+1.2 rnn: ```result/cnews_rnn.yaml```
+1.3 rnn(3个核): ```result/cnews_rnn_cell_3.yaml```
 2. 词典:
-2.1 cnn:
-2.2 rnn:
+2.1 cnn: ```result/cnews_voc_cnn.yaml```
+2.2 rnn: ```result/cnews_voc_rnn.yaml```
 #### 3.1.2 英文数据集的结果
-1. cnn:
-1. rnn:
-### 3.2 训练后可视化的结果
-#### 3.2.1 中文的训练结果
-![]()
-#### 3.2.2 英文的训练结果
-![]()
+1. cnn: ```result/aclImdb_cnn.yaml```
+1. rnn: ```result/aclImdb_rnn.yaml```
+### 3.2 训练可视化的结果
+#### 3.2.1 训练集的精确度
+![](images/)
+#### 3.2.2 训练集的loss
+![](images/)
+#### 3.2.3 验证集的精确度
+![](images/)
+#### 3.2.4 验证集的loss
+![](images/)
+#### 3.2.5 cnn网络架构
+![](images/cnn_graph.png)
+#### 3.2.5 rnn网络架构
+![](images/rnn_graph.png)
 ## 4.参考
 1. [代码:CNN-RNN中文文本分类](https://github.com/gaussic/text-classification-cnn-rnn)
