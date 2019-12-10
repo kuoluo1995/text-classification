@@ -1,0 +1,19 @@
+num_epochs: 10  # 总迭代轮次
+save_freq: 1 # 每多少轮存入 tensorboard
+batch_size: 128 # 每批训练大小
+
+dataset:
+    dataset_name: cnews
+    path: dataset/cnews/info.yaml
+    seq_length: 600  # 序列长度
+
+model:
+    name: TextRNN
+    checkpoint_dir: ./_checkpoint
+    embedding_dim: 64  # 词向量维度
+    num_filters: 128  # 卷积核数目
+    kernel_size: 5  # 卷积核尺寸
+    learning_rate: 1e-3  # 学习率
+    num_layers: 3 # 隐藏层层数
+    rnn_type: gru # lstm 或 gru
+    keep_pro: 0.8 # dropout保留比例

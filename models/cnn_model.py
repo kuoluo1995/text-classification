@@ -7,7 +7,7 @@ from numpy import argmax
 class TextCNN:
     def __init__(self, tag, learning_rate, num_epochs, sess, dataset_name, seq_length, train_generator,
                  eval_generator, vocabulary_size, num_class, name, checkpoint_dir, embedding_dim, num_filters,
-                 kernel_size, save_freq, **kwargs):
+                 kernel_size, keep_pro, save_freq, **kwargs):
         self.kwargs = kwargs
         self.tag = tag
         self.num_epochs = num_epochs
@@ -26,6 +26,7 @@ class TextCNN:
         self.embedding_dim = embedding_dim
         self.num_filters = num_filters
         self.kernel_size = kernel_size
+        self.keep_prob = keep_pro
         self.learning_rate = float(learning_rate)
 
         self.build_networks()
@@ -37,7 +38,7 @@ class TextCNN:
         with tf.name_scope('inputs'):
             self.inputs = tf.placeholder(tf.int32, [None, self.seq_length], name='inputs')
             self.labels = tf.placeholder(tf.float32, [None, self.num_class], name='labels')
-            self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+            self.keep_prob_tensor = tf.placeholder(tf.float32, name='keep_prob')
         # 词向量映射
         with tf.device('/cpu:0'):
             embedding = tf.get_variable('embedding', [self.vocabulary_size, self.embedding_dim])
@@ -51,7 +52,7 @@ class TextCNN:
         with tf.name_scope("score"):
             # 全连接层，后面接dropout以及relu激活
             fc = tf.layers.dense(gmp, self.num_filters // 2, name='fc1')
-            fc = tf.contrib.layers.dropout(fc, self.keep_prob)
+            fc = tf.contrib.layers.dropout(fc, self.keep_prob_tensor)
             fc = tf.nn.relu(fc)
             # 分类器
             self.logits = tf.layers.dense(fc, self.num_class, name='fc2')
@@ -90,7 +91,7 @@ class TextCNN:
                 batch_inputs, batch_labels = next(self.train_generator.get_data_generator())
                 _, loss, accuracy = self.sess.run([optimizer, self.loss, self.accuracy],
                                                   feed_dict={self.inputs: batch_inputs, self.labels: batch_labels,
-                                                             self.keep_prob: 0.5})
+                                                             self.keep_prob_tensor: self.keep_prob})
                 train_loss += loss
                 train_accuracy += accuracy
             # 开始验证结果
@@ -100,7 +101,7 @@ class TextCNN:
                 batch_inputs, batch_labels = next(self.eval_generator.get_data_generator())
                 loss, accuracy = self.sess.run([self.loss, self.accuracy],
                                                feed_dict={self.inputs: batch_inputs, self.labels: batch_labels,
-                                                          self.keep_prob: 1.0})
+                                                          self.keep_prob_tensor: 1.0})
                 eval_loss += loss
                 eval_accuracy += accuracy
             print('第{}轮训练：train_loss:{},train_accuracy:{},eval_loss:{},eval_accuracy:{}'
@@ -131,7 +132,7 @@ class TextCNN:
             batch_inputs, batch_labels = next(self.eval_generator.get_data_generator())
             loss, accuracy, pre_labels = self.sess.run([self.loss, self.accuracy, self.target],
                                                        feed_dict={self.inputs: batch_inputs, self.labels: batch_labels,
-                                                                  self.keep_prob: 1.0})
+                                                                  self.keep_prob_tensor: 1.0})
             batch_result = list()
             for i in range(batch_size):
                 label_id = argmax(batch_labels[i])

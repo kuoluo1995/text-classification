@@ -32,6 +32,6 @@ def evaluate_model(args):
 
 
 if __name__ == '__main__':
-    config = get_config('cnews')
+    config = get_config('cnn/cnews')
     config['tag'] = 'base'
     evaluate_model(config)
