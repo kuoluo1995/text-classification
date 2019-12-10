@@ -1,9 +1,7 @@
 Python Environment: 3.6
 tensorflow-gpu: 1.12
 jieba
-matplotlib
 numpy
 pathlib
 pyyaml
-scikit-learn
 
