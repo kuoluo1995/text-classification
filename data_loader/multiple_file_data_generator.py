@@ -3,7 +3,7 @@ import numpy as np
 from utils import yaml_utils
 
 
-class CnewsDataGenerator:
+class MultipleFileDataGenerator:
     def __init__(self, dictionary, is_augmented, dataset_list, batch_size, seq_length, **kwargs):
         self.word_dictionary = dictionary['word_dictionary']
         self.label_dictionary = dictionary['label_dictionary']

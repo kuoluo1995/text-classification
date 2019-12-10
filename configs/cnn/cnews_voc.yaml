@@ -4,7 +4,7 @@ batch_size: 64 # 每批训练大小
 
 dataset:
     dataset_name: cnews_voc
-    data_generator: cnews_data_generator
+    data_generator: one_file_data_generator
     path: dataset/cnews_voc/info.yaml
     seq_length: 600  # 序列长度
 

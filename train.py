@@ -2,7 +2,6 @@ import tensorflow as tf
 
 from data_loader import get_data_loader_by_name
 from models import get_model_class_by_name
-from models.cnn_model import TextCNN
 from utils import yaml_utils
 from utils.config_utils import get_config
 
