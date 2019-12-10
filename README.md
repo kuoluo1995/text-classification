@@ -74,8 +74,11 @@ python scripts/build_cn_dataset.py
 ```
 利用原数据data/cnews/cnews.txt，预处理，并把预处理后的结果保存到dataset/cnews里面
 这里的构建的数据集是以字为单位构建的字典。
+
 **思考** 很多的内容其实并不是一个字表现出来的，比如鸡，可能构建成的词语有吃鸡，那么分类可能是游戏类，也可能构建成鸡你太美？那就变成娱乐类了。
+
 **所以** 我还常识构建词典，以词典来翻译和训练。也许可以更快更准的找准分类。
+
 2. 构建词典来翻译文本
 ```bash
 python scripts/build_cn_voc_dataset.py
@@ -146,11 +149,16 @@ tensorboard --logdir=../tensorboard_logs
 ### 3.1 训练后验证的结果
 #### 3.1.1 中文数据集的结果
 1. 字典:
+
 1.1 cnn: ```result/cnews_cnn.yaml```
+
 1.2 rnn: ```result/cnews_rnn.yaml```
+
 1.3 rnn(3个核): ```result/cnews_rnn_cell_3.yaml```
 2. 词典:
+
 2.1 cnn: ```result/cnews_voc_cnn.yaml```
+
 2.2 rnn: ```result/cnews_voc_rnn.yaml```
 #### 3.1.2 英文数据集的结果
 1. cnn: ```result/aclImdb_cnn.yaml```
