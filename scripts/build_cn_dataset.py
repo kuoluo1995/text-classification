@@ -4,7 +4,7 @@ from pathlib import Path
 
 from utils import yaml_utils
 
-vocabulary_size = 5000
+vocabulary_size = 7000
 dataset_name = 'cnews'
 output_dir = Path('../dataset').absolute()
 
