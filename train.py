@@ -33,6 +33,6 @@ def train(args):
 
 
 if __name__ == '__main__':
-    config = get_config('rnn/cnews')
+    config = get_config('rnn/cnews_voc')
     config['tag'] = 'base'
     train(config)

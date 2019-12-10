@@ -5,7 +5,8 @@ from models.text_cnn import TextCNN
 class TextRNN(TextCNN):
     def __init__(self, rnn_type, num_layers, **kwargs):
         self.num_layers = num_layers
-        self.cell = self.gru_cell() if rnn_type == 'gru' else self.lstm_cell()
+        self.num_filters = kwargs['num_filters']
+        self.rnn_type = rnn_type
         TextCNN.__init__(self, **kwargs)
 
     def lstm_cell(self):  # lstm核
@@ -15,7 +16,8 @@ class TextRNN(TextCNN):
         return tf.nn.rnn_cell.GRUCell(self.num_filters)
 
     def dropout(self):  # 为每一个rnn核后面加一个dropout层
-        return tf.nn.rnn_cell.DropoutWrapper(self.cell, output_keep_prob=self.keep_prob)
+        cell = self.gru_cell() if self.rnn_type == 'gru' else self.lstm_cell()
+        return tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self.keep_prob)
 
     def build_networks(self):
         # Input data.
@@ -35,8 +37,8 @@ class TextRNN(TextCNN):
             last = _outputs[:, -1, :]  # 取最后一个时序输出作为结果
         with tf.name_scope('score'):
             # 全连接层，后面接dropout以及relu激活
-            fc = tf.layers.dense(last, self.num_filters // 2, name='fc1')
-            fc = tf.contrib.layers.dropout(fc, self.keep_prob)
+            fc = tf.layers.dense(last, self.num_filters, name='fc1')
+            fc = tf.contrib.layers.dropout(fc, self.keep_prob_tensor)
             fc = tf.nn.relu(fc)
 
             # 分类器
