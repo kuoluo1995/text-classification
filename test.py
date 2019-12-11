@@ -39,7 +39,7 @@ def evaluate_model(args):
         print(cm)
 
 if __name__ == '__main__':
-    config = get_config('cnn/aclImdb')
+    config = get_config('rnn/aclImdb')
     config['tag'] = 'base'
     # config['tag'] = 'cell_3'
     # config['model']['num_layers'] = 3

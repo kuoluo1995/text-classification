@@ -194,13 +194,13 @@ tensorboard --logdir=../tensorboard_logs
 
 ### 3.2 训练可视化的结果
 #### 3.2.1 训练集的精确度
-![](images/)
+![](images/tensorboard_train_ac.png)
 #### 3.2.2 训练集的loss
-![](images/)
+![](images/tensorboard_train_loss.png)
 #### 3.2.3 验证集的精确度
-![](images/)
+![](images/tensorboard_eval_ac.png)
 #### 3.2.4 验证集的loss
-![](images/)
+![](images/tensorboard_eval_loss.png)
 #### 3.2.5 cnn网络架构
 ![](images/cnn_graph.png)
 #### 3.2.5 rnn网络架构
