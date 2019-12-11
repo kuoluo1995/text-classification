@@ -3,6 +3,14 @@
 ### 1.1 含义
 本项目主要包含 文本分类的CNN和RNN实现方式
 ### 1.2 模型介绍
+输入的大小是统一的，长度不够的就```<PAD>```，长度超过的就裁剪，
+1. cnn
+
+![](images/cnn_model.png)
+
+2. rnn
+
+![](images/rnn_model.png)
 
 ## 2.训练过程介绍
 ### 2.1 环境安装
@@ -72,7 +80,7 @@ base_path
 ```bash
 python scripts/build_cn_dataset.py
 ```
-利用原数据data/cnews/cnews.txt，预处理，并把预处理后的结果保存到dataset/cnews里面
+利用原数据data/cnews/cnews.txt()，预处理，并把预处理后的结果保存到dataset/cnews里面
 这里的构建的数据集是以字为单位构建的字典。
 
 **思考** 很多的内容其实并不是一个字表现出来的，比如鸡，可能构建成的词语有吃鸡，那么分类可能是游戏类，也可能构建成鸡你太美？那就变成娱乐类了。
@@ -83,13 +91,13 @@ python scripts/build_cn_dataset.py
 ```bash
 python scripts/build_cn_voc_dataset.py
 ```
-利用原数据data/cnews/cnews.txt，预处理，并把预处理后的结果保存到dataset/cnews_voc里面。词典的大小也是7000
+利用原数据data/cnews/[cnews.txt](https://pan.baidu.com/s/1O1OmwHueRQ2DJ1TEa8sroQ)，预处理，并把预处理后的结果保存到dataset/cnews_voc里面。词典的大小也是7000
 ##### 2.3.1.2 创建英文数据集
 网上查了一下，美国年轻人好像要求都认识10000字左右？。所以我的词典大小为10000
 ```bash
 python scripts/build_en_dataset.py
 ```
-利用原数据data/aclImdb，预处理，并把预处理后的结果保存到dataset/aclImdb里面。
+利用原数据data/[aclImdb](https://pan.baidu.com/s/15MHl3pzndu5AaDYaL-T4jQ)，预处理，并把预处理后的结果保存到dataset/aclImdb里面。
 这里注意，之前的中文数据集由于不大，所以我就一次性晒到一个文件里面了。
 而英文的数据集相对较大，所以我这里生成的训练和测试数据里面的input是地址。到训练的时候再读取内容进行翻译。(为了减少内存，不一次性全部处理了)
 #### 2.3.2 训练网络
@@ -150,19 +158,40 @@ tensorboard --logdir=../tensorboard_logs
 #### 3.1.1 中文数据集的结果
 1. 字典:
 
-1.1 cnn: ```result/cnews_cnn.yaml```
+1.1 cnn: 
 
-1.2 rnn: ```result/cnews_rnn.yaml```
+![](images/cnews_cnn_result.png)
 
-1.3 rnn(3个核): ```result/cnews_rnn_cell_3.yaml```
+![](images/cnews_cnn_matrix.png)
+1.2 rnn: 
+
+![](images/cnews_rnn_result.png)
+
+![](images/cnews_rnn_maxtrix.png)
+
 2. 词典:
 
-2.1 cnn: ```result/cnews_voc_cnn.yaml```
+2.1 cnn: 
 
-2.2 rnn: ```result/cnews_voc_rnn.yaml```
+![](images/cnews_voc_cnn_result.png)
+
+![](images/cnews_voc_cnn_matrix.png)
+
+2.2 rnn: 
+
+![](images/cnews_voc_rnn_result.png)
+
+![](images/cnews_voc_rnn_matrix.png)
+
 #### 3.1.2 英文数据集的结果
-1. cnn: ```result/aclImdb_cnn.yaml```
-1. rnn: ```result/aclImdb_rnn.yaml```
+1. cnn: 
+
+![](images/aclImdb_cnn.png)
+
+1. rnn: 
+
+![](images/aclImdb_rnn.png)
+
 ### 3.2 训练可视化的结果
 #### 3.2.1 训练集的精确度
 ![](images/)

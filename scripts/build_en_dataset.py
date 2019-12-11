@@ -1,12 +1,10 @@
-import re
-
 import numpy as np
 from collections import Counter
 from pathlib import Path
 
 from utils import yaml_utils
 
-vocabulary_size = 14000
+vocabulary_size = 10000
 dataset_name = 'aclImdb'
 output_dir = Path('../dataset').absolute()
 output_path = output_dir / dataset_name
@@ -19,8 +17,25 @@ def read_data(path):
         for line in file:
             while '\n' in line:
                 line = line.replace('\n', '')
+            # 之前发现训练结果不好，然后发现原来时由于英文数据符合断句问题导致的
             while '<br />' in line:
                 line = line.replace('<br />', '')
+            line = line.replace('\'', ' \' ')
+            line = line.replace('\"', ' \" ')
+            line = line.replace('.', ' . ')
+            line = line.replace('!', ' ! ')
+            line = line.replace('?', ' ? ')
+            line = line.replace(',', ' , ')
+            line = line.replace(';', ' ; ')
+            line = line.replace('(', ' ( ')
+            line = line.replace(')', ' ) ')
+            line = line.replace('#', ' # ')
+            line = line.replace('$', ' $ ')
+            line = line.replace('&', ' & ')
+            line = line.replace('*', ' * ')
+            line = line.replace('/', ' / ')
+            line = line.replace('-', ' - ')
+            line = line.replace('`', ' ` ')
             if len(line) > 0:
                 contents.append(line)
     return contents

@@ -4,4 +4,4 @@ jieba
 numpy
 pathlib
 pyyaml
-
+sklearn

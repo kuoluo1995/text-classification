@@ -14,6 +14,9 @@ class MultipleFileDataGenerator:
         self.seq_length = seq_length
         self.kwargs = kwargs
 
+    def get_labels(self):
+        return [x for x in self.label_dictionary]
+
     def get_reverse_dictionary(self):
         reverse_dictionary = self.kwargs['reverse_dictionary']
         self.reverse_dictionary = reverse_dictionary['word_dictionary']
@@ -30,7 +33,7 @@ class MultipleFileDataGenerator:
         for i in word_ids:
             if i == 0:
                 continue
-            result += ' '+self.reverse_dictionary[i]
+            result += ' ' + self.reverse_dictionary[i]
         return result
 
     def get_batch_size(self):

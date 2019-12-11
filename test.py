@@ -1,4 +1,5 @@
 import tensorflow as tf
+from sklearn import metrics
 
 from data_loader import get_data_loader_by_name
 from models import get_model_class_by_name
@@ -28,10 +29,14 @@ def evaluate_model(args):
         model_class = get_model_class_by_name(args['model']['name'])
         model = model_class(sess=sess, train_generator=None, eval_generator=eval_data_generator,
                             **dataset_info, **args['dataset'], **args['model'], **args)
-        result = model.test()
-        yaml_utils.write(args['model']['checkpoint_dir'] + '/' + args['dataset']['dataset_name'] + '/' +
-                         args['model']['name'] + '/' + args['tag'] + '/' + 'best_result.yaml', result)
-
+        result, labels = model.test()
+        # yaml_utils.write(args['model']['checkpoint_dir'] + '/' + args['dataset']['dataset_name'] + '/' +
+        #                  args['model']['name'] + '/' + args['tag'] + '/' + 'best_result.yaml', result)
+        print('评估')
+        print(metrics.classification_report(labels, result, target_names=eval_data_generator.get_labels()))
+        print('混淆矩阵')
+        cm = metrics.confusion_matrix(labels, result)
+        print(cm)
 
 if __name__ == '__main__':
     config = get_config('cnn/aclImdb')

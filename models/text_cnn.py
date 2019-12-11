@@ -127,6 +127,7 @@ class TextCNN:
         eval_size = self.eval_generator.get_size()
         batch_size = self.eval_generator.get_batch_size()
         result = list()
+        labels = list()
         print('开始测试')
         for step in range(eval_size):
             batch_inputs, batch_labels = next(self.eval_generator.get_data_generator())
@@ -139,9 +140,11 @@ class TextCNN:
                 batch_result.append({'_预测的分类': str(self.eval_generator.get_label(pre_labels[i])),
                                      '_实际的分类': str(self.eval_generator.get_label(label_id)),
                                      '输入的文字': str(self.eval_generator.get_words(batch_inputs[i]))})
-            result.append({'loss': float(loss), 'accuracy': float(accuracy), '训练的结果': batch_result})
-            print('{}/{} loss:{} accuracy:{}'.format(step + 1, eval_size, loss, accuracy))
-        return result
+                result.append(pre_labels[i])
+                labels.append(label_id)
+            # result.append({'loss': float(loss), 'accuracy': float(accuracy), '训练的结果': batch_result})
+            # print('{}/{} loss:{} accuracy:{}'.format(step + 1, eval_size, loss, accuracy))
+        return result, labels
 
     def save(self, checkpoint_dir, saver, epoch, **kwargs):
         checkpoint_dir.mkdir(parents=True, exist_ok=True)

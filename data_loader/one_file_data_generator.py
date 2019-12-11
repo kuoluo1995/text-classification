@@ -14,6 +14,9 @@ class OneFileDataGenerator:
         self.kwargs = kwargs
         self.transform_word()
 
+    def get_labels(self):
+        return [x for x in self.label_dictionary]
+
     def get_reverse_dictionary(self):
         reverse_dictionary = self.kwargs['reverse_dictionary']
         self.reverse_dictionary = reverse_dictionary['word_dictionary']
