@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from sklearn import metrics
 
@@ -18,6 +19,11 @@ def evaluate_model(args):
         print('导入数据字典完成')
         reverse_dictionary = yaml_utils.read(dataset_info['reverse_dictionary_path'])
         print('导入反向字典完成')
+        if 'embedding_path' in dataset_info.keys():
+            embedding = np.array(yaml_utils.read(dataset_info['embedding_path']), dtype=np.float32)
+        else:
+            embedding = None
+        print('导入词向量完成')
         test_dataset = yaml_utils.read(dataset_info['eval_path'])
         print('导入测试数据完成')
         print('导入完成')
@@ -28,7 +34,7 @@ def evaluate_model(args):
         eval_data_generator.get_reverse_dictionary()
         model_class = get_model_class_by_name(args['model']['name'])
         model = model_class(sess=sess, train_generator=None, eval_generator=eval_data_generator,
-                            **dataset_info, **args['dataset'], **args['model'], **args)
+                            embedding=embedding, **dataset_info, **args['dataset'], **args['model'], **args)
         result, labels = model.test()
         # yaml_utils.write(args['model']['checkpoint_dir'] + '/' + args['dataset']['dataset_name'] + '/' +
         #                  args['model']['name'] + '/' + args['tag'] + '/' + 'best_result.yaml', result)
@@ -38,9 +44,16 @@ def evaluate_model(args):
         cm = metrics.confusion_matrix(labels, result)
         print(cm)
 
+
 if __name__ == '__main__':
-    config = get_config('rnn/aclImdb')
+    config = get_config('adversarial/aclImdb_rnn')
+    # config = get_config('adversarial/aclImdb_cnn')
+    # config = get_config('adversarial/cnews_rnn')
+    # config = get_config('adversarial/cnews_cnn')
+    # config = get_config('cnn/aclImdb')
+    # config = get_config('cnn/cnews')
+    # config = get_config('rnn/aclImdb')
+    # config = get_config('rnn/cnews')
     config['tag'] = 'base'
-    # config['tag'] = 'cell_3'
     # config['model']['num_layers'] = 3
     evaluate_model(config)

@@ -85,7 +85,7 @@ def build_dictionary(vocabulary, labels):
                      {'word_dictionary': reverse_dictionary, 'label_dictionary': reverse_labels_dictionary})
 
 
-def build_dataset(dataset, num_class, vocabulary_size, has_embedding=False):
+def build_dataset(dataset, num_class, vocabulary_size):
     """根据训练集构建词汇表，存储"""
     print('创建训练和验证集')
     dataset_len = len(dataset)
@@ -98,7 +98,7 @@ def build_dataset(dataset, num_class, vocabulary_size, has_embedding=False):
             'train_path': str(output_path / 'train.yaml'), 'eval_path': str(output_path / 'eval.yaml'),
             'dictionary_path': str(output_path / 'dictionary.yaml'),
             'reverse_dictionary_path': str(output_path / 'reverse_dictionary.yaml')}
-    if has_embedding:
+    if embedding_file is not None:
         info.update({'embedding_path': str(output_path / 'embedding.yaml')})
     yaml_utils.write(output_path / 'info.yaml', info)
     print('导出字典,训练和验证集完成')
@@ -115,4 +115,4 @@ if __name__ == '__main__':
     # vocabulary, vocabulary_size = build_vocabulary(dataset)
     vocabulary, vocabulary_size = loadGloVe(embedding_file, embedding_dim)
     build_dictionary(vocabulary, class_type)
-    build_dataset(dataset, len(class_type), vocabulary_size, has_embedding=True)
+    build_dataset(dataset, len(class_type), vocabulary_size)

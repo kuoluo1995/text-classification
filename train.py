@@ -42,14 +42,19 @@ def train(args):
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '3'
-    # config = get_config('adversarial/aclImdb_rnn')
+    config = get_config('adversarial/aclImdb_rnn')
     # config = get_config('adversarial/aclImdb_cnn')
     # config = get_config('adversarial/cnews_rnn')
     # config = get_config('adversarial/cnews_cnn')
+    # config = get_config('adversarial/cnews_voc_cnn')
+    # config = get_config('adversarial/cnews_voc_rnn')
+
     # config = get_config('cnn/aclImdb')
     # config = get_config('cnn/cnews')
+    # config = get_config('cnn/cnews_voc')
     # config = get_config('rnn/aclImdb')
-    config = get_config('rnn/cnews')
+    # config = get_config('rnn/cnews')
+    # config = get_config('rnn/cnews_voc')
     config['tag'] = 'base'
     # config['model']['num_layers'] = 3
     train(config)

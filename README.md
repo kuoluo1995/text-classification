@@ -160,14 +160,135 @@ tensorboard --logdir=../tensorboard_logs
 
 1.1 cnn: 
 
-![](images/cnews_cnn_result.png)
+```
+              precision    recall  f1-score   support
 
-![](images/cnews_cnn_matrix.png)
+          体育       1.00      1.00      1.00       707
+          娱乐       1.00      1.00      1.00       404
+          家居       1.00      1.00      1.00       909
+          房产       1.00      1.00      1.00       202
+          教育       1.00      1.00      1.00       808
+          时尚       1.00      1.00      1.00       808
+          时政       1.00      1.00      1.00       606
+          游戏       1.00      1.00      1.00       606
+          科技       1.00      1.00      1.00      1111
+          财经       1.00      1.00      1.00       303
+
+    accuracy                           1.00      6464
+   macro avg       1.00      1.00      1.00      6464
+weighted avg       1.00      1.00      1.00      6464
+
+混淆矩阵
+[[ 707    0    0    0    0    0    0    0    0    0]
+ [   0  404    0    0    0    0    0    0    0    0]
+ [   0    0  909    0    0    0    0    0    0    0]
+ [   0    0    0  202    0    0    0    0    0    0]
+ [   0    0    0    0  808    0    0    0    0    0]
+ [   0    0    0    0    0  808    0    0    0    0]
+ [   0    0    0    0    0    0  606    0    0    0]
+ [   0    0    0    0    0    0    0  606    0    0]
+ [   0    0    0    0    0    0    0    0 1111    0]
+ [   0    0    0    0    0    0    0    0    0  303]]
+```
+
 1.2 rnn: 
 
-![](images/cnews_rnn_result.png)
+```
+              precision    recall  f1-score   support
 
-![](images/cnews_rnn_maxtrix.png)
+          体育       0.74      1.00      0.85       700
+          娱乐       0.90      1.00      0.95       450
+          家居       1.00      1.00      1.00       650
+          房产       1.00      0.89      0.94       450
+          教育       1.00      0.82      0.90       850
+          时尚       1.00      1.00      1.00       900
+          时政       0.89      0.80      0.84       500
+          游戏       0.91      0.83      0.87       600
+          科技       1.00      0.94      0.97       850
+          财经       0.90      1.00      0.95       450
+
+    accuracy                           0.93      6400
+   macro avg       0.93      0.93      0.93      6400
+weighted avg       0.94      0.93      0.93      6400
+
+混淆矩阵
+[[700   0   0   0   0   0   0   0   0   0]
+ [  0 450   0   0   0   0   0   0   0   0]
+ [  0   0 650   0   0   0   0   0   0   0]
+ [ 50   0   0 400   0   0   0   0   0   0]
+ [100   0   0   0 700   0   0  50   0   0]
+ [  0   0   0   0   0 900   0   0   0   0]
+ [ 50  50   0   0   0   0 400   0   0   0]
+ [ 50   0   0   0   0   0   0 500   0  50]
+ [  0   0   0   0   0   0  50   0 800   0]
+ [  0   0   0   0   0   0   0   0   0 450]]
+```
+
+1.3 adversarial rnn: 
+
+```
+              precision    recall  f1-score   support
+
+          体育       0.82      1.00      0.90       700
+          娱乐       0.90      1.00      0.95       450
+          家居       1.00      1.00      1.00       650
+          房产       1.00      0.89      0.94       450
+          教育       1.00      0.94      0.97       850
+          时尚       0.95      1.00      0.97       900
+          时政       0.90      0.90      0.90       500
+          游戏       1.00      0.75      0.86       600
+          科技       1.00      0.94      0.97       850
+          财经       0.90      1.00      0.95       450
+
+    accuracy                           0.95      6400
+   macro avg       0.95      0.94      0.94      6400
+weighted avg       0.95      0.95      0.94      6400
+
+混淆矩阵
+[[700   0   0   0   0   0   0   0   0   0]
+ [  0 450   0   0   0   0   0   0   0   0]
+ [  0   0 650   0   0   0   0   0   0   0]
+ [ 50   0   0 400   0   0   0   0   0   0]
+ [ 50   0   0   0 800   0   0   0   0   0]
+ [  0   0   0   0   0 900   0   0   0   0]
+ [  0   0   0   0   0  50 450   0   0   0]
+ [ 50  50   0   0   0   0   0 450   0  50]
+ [  0   0   0   0   0   0  50   0 800   0]
+ [  0   0   0   0   0   0   0   0   0 450]]
+```
+
+1.4 adversarial cnn: 
+
+```
+              precision    recall  f1-score   support
+
+          体育       1.00      1.00      1.00       707
+          娱乐       1.00      1.00      1.00       404
+          家居       1.00      1.00      1.00       909
+          房产       1.00      1.00      1.00       202
+          教育       1.00      1.00      1.00       808
+          时尚       1.00      1.00      1.00       808
+          时政       1.00      1.00      1.00       606
+          游戏       1.00      1.00      1.00       606
+          科技       1.00      1.00      1.00      1111
+          财经       1.00      1.00      1.00       303
+
+    accuracy                           1.00      6464
+   macro avg       1.00      1.00      1.00      6464
+weighted avg       1.00      1.00      1.00      6464
+
+混淆矩阵
+[[ 707    0    0    0    0    0    0    0    0    0]
+ [   0  404    0    0    0    0    0    0    0    0]
+ [   0    0  909    0    0    0    0    0    0    0]
+ [   0    0    0  202    0    0    0    0    0    0]
+ [   0    0    0    0  808    0    0    0    0    0]
+ [   0    0    0    0    0  808    0    0    0    0]
+ [   0    0    0    0    0    0  606    0    0    0]
+ [   0    0    0    0    0    0    0  606    0    0]
+ [   0    0    0    0    0    0    0    0 1111    0]
+ [   0    0    0    0    0    0    0    0    0  303]]
+```
 
 2. 词典:
 
@@ -183,14 +304,86 @@ tensorboard --logdir=../tensorboard_logs
 
 ![](images/cnews_voc_rnn_matrix.png)
 
+2.3 adversarial cnn: 
+
+![](images/cnews_voc_cnn_result.png)
+
+![](images/cnews_voc_cnn_matrix.png)
+
+2.4 adversarial rnn: 
+
+![](images/cnews_voc_rnn_result.png)
+
+![](images/cnews_voc_rnn_matrix.png)
+
 #### 3.1.2 英文数据集的结果
 1. cnn: 
 
-![](images/aclImdb_cnn.png)
+```
+              precision    recall  f1-score   support
 
-1. rnn: 
+         neg       0.96      0.81      0.88      1248
+         pos       0.84      0.97      0.90      1248
 
-![](images/aclImdb_rnn.png)
+    accuracy                           0.89      2496
+   macro avg       0.90      0.89      0.89      2496
+weighted avg       0.90      0.89      0.89      2496
+
+混淆矩阵
+[[1014  234]
+ [  39 1209]]
+```
+
+2. rnn: 
+
+```
+  'precision', 'predicted', average, warn_for)
+              precision    recall  f1-score   support
+
+         neg       0.50      1.00      0.67      1248
+         pos       0.00      0.00      0.00      1248
+
+    accuracy                           0.50      2496
+   macro avg       0.25      0.50      0.33      2496
+weighted avg       0.25      0.50      0.33      2496
+
+混淆矩阵
+[[1248    0]
+ [1248    0]]
+```
+
+3. adversarial cnn: 
+```
+              precision    recall  f1-score   support
+
+         neg       0.97      0.88      0.92      1248
+         pos       0.89      0.97      0.93      1248
+
+    accuracy                           0.92      2496
+   macro avg       0.93      0.92      0.92      2496
+weighted avg       0.93      0.92      0.92      2496
+
+混淆矩阵
+[[1092  156]
+ [  39 1209]]
+```
+
+4. adversarial rnn: 
+```
+  'precision', 'predicted', average, warn_for)
+              precision    recall  f1-score   support
+
+         neg       0.00      0.00      0.00      1248
+         pos       0.50      1.00      0.67      1248
+
+    accuracy                           0.50      2496
+   macro avg       0.25      0.50      0.33      2496
+weighted avg       0.25      0.50      0.33      2496
+
+混淆矩阵
+[[   0 1248]
+ [   0 1248]]
+```
 
 ### 3.2 训练可视化的结果
 #### 3.2.1 训练集的精确度
@@ -205,5 +398,9 @@ tensorboard --logdir=../tensorboard_logs
 ![](images/cnn_graph.png)
 #### 3.2.5 rnn网络架构
 ![](images/rnn_graph.png)
+#### 3.2.5 adversarial cnn网络架构
+![](images/adversarial_cnn_graph.png)
+#### 3.2.5 adversarial rnn网络架构
+![](images/adversarial_rnn_graph.png)
 ## 4.参考
 1. [代码:CNN-RNN中文文本分类](https://github.com/gaussic/text-classification-cnn-rnn)

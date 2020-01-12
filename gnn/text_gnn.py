@@ -4,11 +4,26 @@ from gnn.networks import gcn_layer
 from models.text_cnn import TextCNN
 
 
-class TextGNN(TextCNN):
-    def __init__(self, num_node, l2, **kwargs):
+class TextGNN:
+    def __init__(self, sess, tag, save_freq, num_epochs, dataset_name, train_generator, seq_length, num_class, name,
+                 checkpoint_dir, num_filters, keep_prob, learning_rate, num_node, l2, **kwargs):
+        self.sess = sess
+        self.tag = tag
+        self.num_epochs = num_epochs
+        self.save_freq = save_freq
+
+        self.dataset_name = dataset_name
+        self.train_generator = train_generator
+        self.seq_length = seq_length
+        self.num_class = num_class
+
+        self.name = name
+        self.checkpoint_dir = checkpoint_dir
         self.num_node = num_node
+        self.num_filters = num_filters
+        self.keep_prob = keep_prob
+        self.learning_rate = learning_rate
         self.l2 = l2
-        TextCNN.__init__(self, **kwargs)
 
     def build_networks(self):
         # Input data.
@@ -67,8 +82,7 @@ class TextGNN(TextCNN):
                                        self.sess.graph)
         best_glob_accuracy = 0
         train_size = self.train_generator.get_size()
-        eval_size = self.eval_generator.get_size()
-        feature, adjacency_matrix, num_nonzero, train_labels, train_labels_mask, eval_labels, eval_labels_mask = self.train_generator.get_data()
+        feature, adjacency_matrix, num_nonzero, train_labels, train_labels_mask, eval_labels, eval_labels_mask = self.train_generator
         print('开始训练')
         for epoch in range(self.num_epochs):
             train_loss = 0
@@ -83,33 +97,21 @@ class TextGNN(TextCNN):
                                                              self.keep_prob_tensor: self.keep_prob})
                 train_loss += loss
                 train_accuracy += accuracy
-            # 开始验证结果
-            eval_loss = 0
-            eval_accuracy = 0
-            for step in range(eval_size):
-                loss, accuracy = self.sess.run([self.loss, self.accuracy],
-                                               feed_dict={self.features: feature,
-                                                          self.adjacency_matrix: adjacency_matrix,
-                                                          self.num_nonzero: num_nonzero, self.labels: eval_labels,
-                                                          self.labels_mask: eval_labels_mask,
-                                                          self.keep_prob_tensor: 1.0})
-                eval_loss += loss
-                eval_accuracy += accuracy
+
             print('第{}轮训练：train_loss:{},train_accuracy:{},eval_loss:{},eval_accuracy:{}'
-                  .format(epoch + 1, train_loss / train_size, train_accuracy / train_size, eval_loss / eval_size,
-                          eval_accuracy / eval_size))
+                  .format(epoch + 1, train_loss / train_size, train_accuracy / train_size, 0, 0))
             summary = self.sess.run(self.scalar_summary,
                                     feed_dict={self.loss: train_loss / train_size,
                                                self.accuracy: train_accuracy / train_size,
-                                               self.eval_loss: eval_loss / eval_size,
-                                               self.eval_accuracy: eval_accuracy / eval_size})
+                                               self.eval_loss: 0,
+                                               self.eval_accuracy: 0})
             writer.add_summary(summary, epoch)
             # save train model
-            if epoch % self.save_freq == 0:
-                self.save(self.checkpoint_dir / 'train', self.train_saver, epoch)
-            if best_glob_accuracy < (train_accuracy + eval_accuracy):
-                self.save(self.checkpoint_dir / 'best', self.best_saver, epoch)
-                best_glob_accuracy = train_accuracy + eval_accuracy
+            # if epoch % self.save_freq == 0:
+            #     self.save(self.checkpoint_dir / 'train', self.train_saver, epoch)
+            # if best_glob_accuracy < (train_accuracy + eval_accuracy):
+            #     self.save(self.checkpoint_dir / 'best', self.best_saver, epoch)
+            #     best_glob_accuracy = train_accuracy + eval_accuracy
 
     def save(self, checkpoint_dir, saver, epoch, **kwargs):
         checkpoint_dir.mkdir(parents=True, exist_ok=True)

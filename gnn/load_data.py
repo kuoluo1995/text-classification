@@ -24,14 +24,14 @@ def load_network(path, dataset_str):
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
     objects = []
     for i in range(len(names)):
-        with open(path + "data/ind.{}.{}".format(dataset_str, names[i]), 'rb') as f:
+        with open("{}/ind.{}.{}".format(path, dataset_str, names[i]), 'rb') as f:
             if sys.version_info > (3, 0):
                 objects.append(pickle.load(f, encoding='latin1'))
             else:
                 objects.append(pickle.load(f))
 
     x, y, tx, ty, allx, ally, graph = tuple(objects)
-    test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(dataset_str))
+    test_idx_reorder = parse_index_file("{}/ind.{}.test.index".format(path, dataset_str))
     test_idx_range = np.sort(test_idx_reorder)
 
     features = sp.vstack((allx, tx)).tolil()
