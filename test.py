@@ -46,12 +46,12 @@ def evaluate_model(args):
 
 
 if __name__ == '__main__':
-    config = get_config('adversarial/aclImdb_rnn')
+    # config = get_config('adversarial/aclImdb_rnn')
     # config = get_config('adversarial/aclImdb_cnn')
     # config = get_config('adversarial/cnews_rnn')
     # config = get_config('adversarial/cnews_cnn')
     # config = get_config('adversarial/cnews_voc_cnn')
-    # config = get_config('adversarial/cnews_voc_rnn')
+    config = get_config('adversarial/cnews_voc_rnn')
 
     # config = get_config('cnn/aclImdb')
     # config = get_config('cnn/cnews')
