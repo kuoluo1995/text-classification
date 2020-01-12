@@ -6,8 +6,8 @@ from numpy import argmax
 
 class TextCNN:
     def __init__(self, tag, learning_rate, num_epochs, sess, dataset_name, seq_length, train_generator,
-                 eval_generator, vocabulary_size, num_class, name, checkpoint_dir, embedding_dim, num_filters,
-                 kernel_size, keep_pro, save_freq, **kwargs):
+                 eval_generator, vocabulary_size, num_class, name, checkpoint_dir, embedding_dim, embedding, num_layers,
+                 num_filters, hidden_size, kernel_size, keep_pro, save_freq, **kwargs):
         self.kwargs = kwargs
         self.tag = tag
         self.num_epochs = num_epochs
@@ -24,7 +24,10 @@ class TextCNN:
         self.name = name
         self.checkpoint_dir = Path(checkpoint_dir) / self.dataset_name / self.name / self.tag
         self.embedding_dim = embedding_dim
+        self.init_embedding = embedding
+        self.num_layers = num_layers
         self.num_filters = num_filters
+        self.hidden_size = hidden_size
         self.kernel_size = kernel_size
         self.keep_prob = keep_pro
         self.learning_rate = float(learning_rate)
@@ -40,39 +43,50 @@ class TextCNN:
             self.labels = tf.placeholder(tf.float32, [None, self.num_class], name='labels')
             self.keep_prob_tensor = tf.placeholder(tf.float32, name='keep_prob')
         # 词向量映射
-        with tf.device('/cpu:0'):
-            embedding = tf.get_variable('embedding', [self.vocabulary_size, self.embedding_dim])
-            embedding_inputs = tf.nn.embedding_lookup(embedding, self.inputs)
+        if self.init_embedding is not None:
+            self.embedding = tf.get_variable(name='embedding', initializer=self.init_embedding, dtype=tf.float32)
+        else:
+            self.embedding = tf.get_variable('embedding', [self.vocabulary_size, self.embedding_dim], dtype=tf.float32)
 
-        with tf.name_scope('cnn'):
-            # CNN layer
-            conv = tf.layers.conv1d(embedding_inputs, self.num_filters, self.kernel_size, name='conv')
-            # global max pooling layer
-            gmp = tf.reduce_max(conv, reduction_indices=[1], name='gmp')
-        with tf.name_scope("score"):
-            # 全连接层，后面接dropout以及relu激活
-            fc = tf.layers.dense(gmp, self.num_filters // 2, name='fc1')
-            fc = tf.contrib.layers.dropout(fc, self.keep_prob_tensor)
-            fc = tf.nn.relu(fc)
-            # 分类器
-            self.logits = tf.layers.dense(fc, self.num_class, name='fc2')
-            self.target = tf.argmax(tf.nn.softmax(self.logits), 1)  # 预测类别
+        logits = self.get_logits(self.inputs)
+
         with tf.name_scope('loss'):
-            self.loss = tf.reduce_mean(
-                tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.logits, labels=self.labels))
+            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits, labels=self.labels))
+
         with tf.name_scope('accuracy'):
+            self.target = tf.argmax(tf.nn.softmax(logits), 1)  # 预测类别
             correct_pred = tf.equal(tf.argmax(self.labels, 1), self.target)
             self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+        self.build_summary()
 
+    def build_summary(self):
         with tf.name_scope('tensorboard'):
             loss_scalar = tf.summary.scalar('train_loss', self.loss)
             accuracy_scalar = tf.summary.scalar('train_accuracy', self.accuracy)
             self.eval_loss = tf.placeholder(tf.float32, name='eval_loss')
-            eval_loss_scalar = tf.summary.scalar('loss', self.eval_loss)
+            eval_loss_scalar = tf.summary.scalar('eval_loss', self.eval_loss)
             self.eval_accuracy = tf.placeholder(tf.float32, name='eval_accuracy')
-            eval_accuracy_scalar = tf.summary.scalar('accuracy', self.eval_accuracy)
+            eval_accuracy_scalar = tf.summary.scalar('eval_accuracy', self.eval_accuracy)
             self.scalar_summary = tf.summary.merge(
                 [loss_scalar, accuracy_scalar, eval_loss_scalar, eval_accuracy_scalar])
+
+    def get_logits(self, inputs, reuse=False):
+        with tf.variable_scope('get_logits', reuse=reuse):
+            inputs = tf.nn.embedding_lookup(self.embedding, inputs)
+            with tf.name_scope('cnn'):
+                for i in range(self.num_layers):
+                    # CNN layer
+                    inputs = tf.layers.conv1d(inputs, self.num_filters, self.kernel_size, name='conv_{}'.format(i))
+                    # global max pooling layer
+                    inputs = tf.reduce_max(inputs, reduction_indices=[1], name='gmp')
+            with tf.name_scope("score"):
+                # 全连接层，后面接dropout以及relu激活
+                fc = tf.layers.dense(inputs, self.hidden_size, name='fc1')
+                fc = tf.layers.dropout(fc, self.keep_prob_tensor)
+                fc = tf.nn.relu(fc)
+                # 分类器
+                logits = tf.layers.dense(fc, self.num_class, name='fc2')
+            return logits
 
     def train(self):
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.loss)
@@ -142,8 +156,6 @@ class TextCNN:
                                      '输入的文字': str(self.eval_generator.get_words(batch_inputs[i]))})
                 result.append(pre_labels[i])
                 labels.append(label_id)
-            # result.append({'loss': float(loss), 'accuracy': float(accuracy), '训练的结果': batch_result})
-            # print('{}/{} loss:{} accuracy:{}'.format(step + 1, eval_size, loss, accuracy))
         return result, labels
 
     def save(self, checkpoint_dir, saver, epoch, **kwargs):

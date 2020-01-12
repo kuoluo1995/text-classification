@@ -3,13 +3,13 @@ save_freq: 1 # 每多少轮存入 tensorboard
 batch_size: 64 # 每批训练大小
 
 dataset:
-    dataset_name: cnews_voc
     data_generator: one_file_data_generator
-    path: dataset/cnews_voc/info.yaml
+    dataset_name: cnews
+    path: dataset/cnews/info.yaml
     seq_length: 600  # 序列长度
 
 model:
-    name: text_cnn
+    name: text_adversarial_cnn
     checkpoint_dir: ./_checkpoint
     num_filters: 256  # 卷积核数目
     hidden_size: 128  # 全连接卷积数量卷积核数目
@@ -17,3 +17,4 @@ model:
     learning_rate: 1e-3  # 学习率
     num_layers: 1 # 隐藏层层数
     keep_pro: 0.5 # dropout保留比例
+    rnn_type:

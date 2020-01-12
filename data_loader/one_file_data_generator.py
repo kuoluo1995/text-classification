@@ -43,7 +43,8 @@ class OneFileDataGenerator:
         print('翻译文字成序列')
         for i in range(len(self.dataset_list)):
             # 固定文本序列长度
-            input = [self.word_dictionary[x] for x in self.dataset_list[i]['input'] if x in self.word_dictionary]
+            input = [self.word_dictionary[x.lower()] for x in self.dataset_list[i]['input'] if
+                     x.lower() in self.word_dictionary]
             if len(input) < self.seq_length:
                 input.extend([0 for _ in range(self.seq_length - len(input))])
             else:

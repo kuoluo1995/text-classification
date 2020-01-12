@@ -40,13 +40,10 @@ class MultipleFileDataGenerator:
         return self.batch_size
 
     def transform_word(self, source_input_path, source_label):
-        source_input_list = read_data(source_input_path)
-        source_input = []
-        for content in source_input_list:
-            source_input.extend(content.split())
-
+        source_input = read_data(source_input_path)
         # 固定文本序列长度
-        input = [self.word_dictionary[x] for x in source_input if x in self.word_dictionary]
+        input = [self.word_dictionary[x.lower()] for x in source_input if x.lower() in self.word_dictionary]
+
         if len(input) < self.seq_length:
             input.extend([0 for _ in range(self.seq_length - len(input))])
         else:
