@@ -22,6 +22,7 @@ def train(args):
             embedding = np.array(yaml_utils.read(dataset_info['embedding_path']), dtype=np.float32)
         else:
             embedding = None
+        # embedding = None  # test without embedding
         print('导入词向量完成')
         train_dataset = yaml_utils.read(dataset_info['train_path'])
         print('导入数据训练数据完成')
@@ -42,7 +43,8 @@ def train(args):
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '3'
-    config = get_config('adversarial/aclImdb_rnn')
+    config = get_config('adversarial/aclImdb_rnn_binary')
+    # config = get_config('adversarial/aclImdb_rnn')
     # config = get_config('adversarial/aclImdb_cnn')
     # config = get_config('adversarial/cnews_rnn')
     # config = get_config('adversarial/cnews_cnn')
@@ -56,5 +58,9 @@ if __name__ == '__main__':
     # config = get_config('rnn/cnews')
     # config = get_config('rnn/cnews_voc')
     config['tag'] = 'base'
-    # config['model']['num_layers'] = 3
+    # config['batch_size'] = 256
+    # config['model']['learning_rate'] = 0.01
+    # config['num_epochs'] = 50
+    # config['tag'] = 'lstm_without_embedding'
+    # config['model']['rnn_type'] = 'lstm'
     train(config)

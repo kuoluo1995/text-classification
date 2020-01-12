@@ -294,27 +294,81 @@ weighted avg       1.00      1.00      1.00      6464
 
 2.1 cnn: 
 
-![](images/cnews_voc_cnn_result.png)
+```
+              precision    recall  f1-score   support
 
-![](images/cnews_voc_cnn_matrix.png)
+          体育       1.00      1.00      1.00       303
+          娱乐       1.00      1.00      1.00      1010
+          家居       1.00      1.00      1.00       505
+          房产       1.00      1.00      1.00       606
+          教育       1.00      1.00      1.00       606
+          时尚       1.00      1.00      1.00       505
+          时政       1.00      1.00      1.00       909
+          游戏       1.00      1.00      1.00      1010
+          科技       1.00      1.00      1.00       404
+          财经       1.00      1.00      1.00       606
+
+    accuracy                           1.00      6464
+   macro avg       1.00      1.00      1.00      6464
+weighted avg       1.00      1.00      1.00      6464
+
+混淆矩阵
+[[ 303    0    0    0    0    0    0    0    0    0]
+ [   0 1010    0    0    0    0    0    0    0    0]
+ [   0    0  505    0    0    0    0    0    0    0]
+ [   0    0    0  606    0    0    0    0    0    0]
+ [   0    0    0    0  606    0    0    0    0    0]
+ [   0    0    0    0    0  505    0    0    0    0]
+ [   0    0    0    0    0    0  909    0    0    0]
+ [   0    0    0    0    0    0    0 1010    0    0]
+ [   0    0    0    0    0    0    0    0  404    0]
+ [   0    0    0    0    0    0    0    0    0  606]]
+```
 
 2.2 rnn: 
 
-![](images/cnews_voc_rnn_result.png)
+```
 
-![](images/cnews_voc_rnn_matrix.png)
+```
 
 2.3 adversarial cnn: 
 
-![](images/cnews_voc_cnn_result.png)
+```
+              precision    recall  f1-score   support
 
-![](images/cnews_voc_cnn_matrix.png)
+          体育       1.00      1.00      1.00       303
+          娱乐       1.00      1.00      1.00      1010
+          家居       1.00      1.00      1.00       505
+          房产       1.00      1.00      1.00       606
+          教育       1.00      1.00      1.00       606
+          时尚       1.00      1.00      1.00       505
+          时政       1.00      1.00      1.00       909
+          游戏       1.00      1.00      1.00      1010
+          科技       1.00      1.00      1.00       404
+          财经       1.00      1.00      1.00       606
+
+    accuracy                           1.00      6464
+   macro avg       1.00      1.00      1.00      6464
+weighted avg       1.00      1.00      1.00      6464
+
+混淆矩阵
+[[ 303    0    0    0    0    0    0    0    0    0]
+ [   0 1010    0    0    0    0    0    0    0    0]
+ [   0    0  505    0    0    0    0    0    0    0]
+ [   0    0    0  606    0    0    0    0    0    0]
+ [   0    0    0    0  606    0    0    0    0    0]
+ [   0    0    0    0    0  505    0    0    0    0]
+ [   0    0    0    0    0    0  909    0    0    0]
+ [   0    0    0    0    0    0    0 1010    0    0]
+ [   0    0    0    0    0    0    0    0  404    0]
+ [   0    0    0    0    0    0    0    0    0  606]]
+```
 
 2.4 adversarial rnn: 
 
-![](images/cnews_voc_rnn_result.png)
+```
 
-![](images/cnews_voc_rnn_matrix.png)
+```
 
 #### 3.1.2 英文数据集的结果
 1. cnn: 
@@ -404,3 +458,6 @@ weighted avg       0.25      0.50      0.33      2496
 ![](images/adversarial_rnn_graph.png)
 ## 4.参考
 1. [代码:CNN-RNN中文文本分类](https://github.com/gaussic/text-classification-cnn-rnn)
+2. [adversarial loss tensorflow的官方实现方式](https://github.com/tensorflow/models/tree/master/research/adversarial_text)
+3. [adversarial loss 其他人的实现方式](https://github.com/enry12/adversarial_training_methods)
+4. [adversarial loss 多任务的文本分类](https://github.com/FrankWork/fudan_mtl_reviews)

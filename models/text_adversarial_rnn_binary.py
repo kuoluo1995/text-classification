@@ -2,7 +2,7 @@ import tensorflow as tf
 from models.text_rnn import TextRNN
 
 
-class TextAdversarialRNN(TextRNN):
+class TextAdversarialRNNBinary(TextRNN):
     def __init__(self, **kwargs):
         TextRNN.__init__(self, **kwargs)
 
@@ -10,7 +10,7 @@ class TextAdversarialRNN(TextRNN):
         # Input data.
         with tf.name_scope('inputs'):
             self.inputs = tf.placeholder(tf.int32, [None, self.seq_length], name='inputs')
-            self.labels = tf.placeholder(tf.float32, [None, self.num_class], name='labels')
+            self.labels = tf.placeholder(tf.int32, [None], name='labels')  # 二分类问题
             self.keep_prob_tensor = tf.placeholder(tf.float32, name='keep_prob')
         # 词向量映射
         if self.init_embedding is not None:
@@ -22,18 +22,17 @@ class TextAdversarialRNN(TextRNN):
         logits, embedding_inputs = self.get_logits(self.inputs)
         # loss
         with tf.name_scope('loss'):
-            cl_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits, labels=self.labels))
+            cl_loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=self.labels))
         with tf.name_scope('adversarial'):
             perturbed = self.get_adversarial(cl_loss, embedding_inputs)
         _logits, _ = self.get_logits(self.inputs, perturbed, reuse=True)
         with tf.name_scope('loss'):
-            adv_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=_logits, labels=self.labels))
+            adv_loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=_logits, labels=self.labels))
             self.loss = cl_loss + adv_loss
 
         with tf.name_scope('accuracy'):
-            self.target = tf.argmax(tf.nn.softmax(logits), 1)  # 预测类别
-            correct_pred = tf.equal(tf.argmax(self.labels, 1), self.target)
-            self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+            self.target = tf.argmax(logits, 1)  # 预测类别
+            self.accuracy = tf.metrics.accuracy(labels=self.labels, predictions=self.target)
         self.build_summary()
 
     def get_logits(self, inputs, perturbed=None, reuse=False):
@@ -53,7 +52,8 @@ class TextAdversarialRNN(TextRNN):
                 fc = tf.layers.dense(last, self.hidden_size, name='fc1')
                 fc = tf.nn.relu(fc)
                 # 分类器
-                logits = tf.layers.dense(fc, self.num_class, name='fc2')
+                fc = tf.layers.dense(fc, 1, name='fc2')
+                logits = tf.nn.sigmoid(fc)
             return logits, embedding_inputs
 
     def get_adversarial(self, loss, embedding_inputs, perturbed=0.02):  # Perturbation MULTiplier
