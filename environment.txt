@@ -1,7 +1,8 @@
-Python Environment: 3.6
-tensorflow-gpu: 1.12
+python 3.6
+tensorflow-gpu 1.12
 jieba
 numpy
 pathlib
 pyyaml
 sklearn
+nltk

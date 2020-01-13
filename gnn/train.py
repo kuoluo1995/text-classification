@@ -18,14 +18,11 @@ def train(args):
         print('导入词向量完成')
         data_generator = load_network('E:/Dataset/gnn', 'cora')
         model = TextGNN(sess=sess, train_generator=data_generator, **args['dataset'], **args['model'], **args)
-        # model_class = get_model_class_by_name(args['model']['name'])
-        # model = model_class(sess=sess, train_generator=train_data_generator, eval_generator=None, embedding=embedding,
-        #                     **dataset_info, **args['dataset'], **args['model'], **args)
         model.train()
 
 
 if __name__ == "__main__":
-    config = get_config('gnn/cora')
+    config = yaml_utils.read('../configs/' + 'gnn/cora' + '.yaml')
     config['tag'] = 'base'
     # config['model']['num_layers'] = 3
     train(config)

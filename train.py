@@ -42,8 +42,8 @@ def train(args):
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '3'
-    # config = get_config('adversarial/aclImdb_rnn')
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+    config = get_config('adversarial/aclImdb_rnn')
     # config = get_config('adversarial/aclImdb_cnn')
     # config = get_config('adversarial/cnews_rnn')
     # config = get_config('adversarial/cnews_cnn')
@@ -53,10 +53,10 @@ if __name__ == '__main__':
     # config = get_config('cnn/aclImdb')
     # config = get_config('cnn/cnews')
     # config = get_config('cnn/cnews_voc')
-    config = get_config('rnn/aclImdb')
+    # config = get_config('rnn/aclImdb')
     # config = get_config('rnn/cnews')
     # config = get_config('rnn/cnews_voc')
-    config['tag'] = 'lstm'
+    config['tag'] = 'lstm_clear_string'
     # config['tag'] = 'lstm_without_embedding'
     config['model']['rnn_type'] = 'lstm'
     train(config)

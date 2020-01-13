@@ -59,10 +59,32 @@ def read_data(path):
             # 之前发现训练结果不好，然后发现原来时由于英文数据符合断句问题导致的
             while '<br />' in line:
                 line = line.replace('<br />', '')
+            line = clean_str(line)
             words = [s for s in re.split(r'\W+', line) if s and not s.isspace()]
             if len(line) > 0:
                 contents.extend(words)
     return contents
+
+
+def clean_str(string):
+    """
+    Tokenization/string cleaning for all datasets except for SST.
+    Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
+    """
+    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+    string = re.sub(r"\'s", " \'s", string)
+    string = re.sub(r"\'ve", " \'ve", string)
+    string = re.sub(r"n\'t", " n\'t", string)
+    string = re.sub(r"\'re", " \'re", string)
+    string = re.sub(r"\'d", " \'d", string)
+    string = re.sub(r"\'ll", " \'ll", string)
+    string = re.sub(r",", " , ", string)
+    string = re.sub(r"!", " ! ", string)
+    string = re.sub(r"\(", " \( ", string)
+    string = re.sub(r"\)", " \) ", string)
+    string = re.sub(r"\?", " \? ", string)
+    string = re.sub(r"\s{2,}", " ", string)
+    return string.strip().lower()
 
 
 def build_dictionary(vocabulary, labels):

@@ -51,16 +51,16 @@ if __name__ == '__main__':
     # config = get_config('adversarial/cnews_rnn')
     # config = get_config('adversarial/cnews_cnn')
     # config = get_config('adversarial/cnews_voc_cnn')
-    config = get_config('adversarial/cnews_voc_rnn')
+    # config = get_config('adversarial/cnews_voc_rnn')
 
     # config = get_config('cnn/aclImdb')
     # config = get_config('cnn/cnews')
     # config = get_config('cnn/cnews_voc')
-    # config = get_config('rnn/aclImdb')
+    config = get_config('rnn/aclImdb')
     # config = get_config('rnn/cnews')
     # config = get_config('rnn/cnews_voc')
-    config['tag'] = 'base'
+    # config['tag'] = 'base'
     # config['tag'] = 'embedding_untrainable'
-    # config['tag'] = 'lstm'
-    # config['model']['rnn_type'] = 'lstm'
+    config['tag'] = 'lstm'
+    config['model']['rnn_type'] = 'lstm'
     evaluate_model(config)

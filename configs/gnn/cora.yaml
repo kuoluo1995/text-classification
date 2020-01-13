@@ -4,15 +4,15 @@ batch_size: 64 # 每批训练大小
 
 dataset:
     dataset_name: cora
-    path: E:/Dataset/gnn
-    seq_length: 0  # self.X.shape[1]
-    num_class: 0 # self.data['y_train'].shape[1]
+    path: E:/Dataset/gnn # ../data/
+#    seq_length: 0  # self.X.shape[1]
+#    num_class: 0 # self.data['y_train'].shape[1]
 
 model:
     name: text_gnn
     checkpoint_dir: ./_checkpoint
     num_filters: 256  # lstm卷积核数目
-    nom_node: 128 #  self.X.shape[0]
+#    nom_node: 128 #  self.X.shape[0]
     learning_rate: 0.01  # 学习率
     num_layers: 2 # 隐藏层层数
     keep_pro: 0.5 # dropout保留比例
