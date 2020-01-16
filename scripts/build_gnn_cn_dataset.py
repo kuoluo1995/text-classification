@@ -31,13 +31,15 @@ def read_data(path):
             if content:
                 words_ = list()
                 words_.extend(content)
+                for _word in words_:
+                    global_words_freq[_word] += 1
                 labels_.add(label)
                 dataset_.append({'document_id': doc_id, 'words': words_, 'label': label})
     print('导入完成')
     return dataset_, list(labels_)
 
 
-def remove_words(_dataset):
+def remove_words(_dataset, _labels):
     stop_words = []
     for _word in open('chinese_stopwords.txt', 'r'):
         stop_words.append(_word.strip())
@@ -50,6 +52,7 @@ def remove_words(_dataset):
                 vocab.add(_word)
                 _words.append(_word)
         _dataset[i]['words'] = _words
+        _dataset[i]['label_id'] = _labels.index(_item['label'])
     return _dataset, list(vocab)
 
 
@@ -103,7 +106,7 @@ if __name__ == '__main__':
     # build clean data
     dataset, labels = read_data(dataset_path)
     print('remove_words')
-    dataset, vocabulary = remove_words(dataset)
+    dataset, vocabulary = remove_words(dataset, labels)
     csv_utils.write(output_path / 'labels.csv', labels)
     print('get dataset labels vocabulary document')
     np.random.shuffle(dataset)

@@ -8,7 +8,6 @@ from pathlib import Path
 from utils import csv_utils
 
 dataset_name = 'cnews_voc'
-embedding_file = None
 embedding_dim = 64  # 词向量维度
 min_words_freq = 5  # to remove rare words
 train_scale = 0.9  # slect 90% training set
@@ -36,13 +35,15 @@ def read_data(path):
                 while ' ' in content:
                     content = content.replace(' ', '')
                 words_ = list(jieba.cut(content, cut_all=False))
+                for _word in words_:
+                    global_words_freq[_word] += 1
                 labels_.add(label)
                 dataset_.append({'document_id': doc_id, 'words': words_, 'label': label})
     print('导入完成')
     return dataset_, list(labels_)
 
 
-def remove_words(_dataset):
+def remove_words(_dataset, _labels):
     stop_words = []
     for _word in open('chinese_stopwords.txt', 'r'):
         stop_words.append(_word.strip())
@@ -55,7 +56,8 @@ def remove_words(_dataset):
                 vocab.add(_word)
                 _words.append(_word)
         _dataset[i]['words'] = _words
-    return _dataset, vocab
+        _dataset[i]['label_id'] = _labels.index(_item['label'])
+    return _dataset, list(vocab)
 
 
 def build_adjacency_matrix(_dataset, num_label):
@@ -75,7 +77,7 @@ def build_adjacency_matrix(_dataset, num_label):
 
     y = np.zeros((_data_size, num_label))
     for i in range(_data_size):
-        y[i, labels.index(dataset[i]['label'])] = 1
+        y[i, dataset[i]['label_id']] = 1
     return x, y, x_row, x_col, x_data
 
 
@@ -89,10 +91,11 @@ def build_all_adjacency_matrix(_rows, _cols, _data, y, vocab_size):
             _cols.append(j)
             _data.append(word_vectors.item(i, j))
     all_x = sp.csr_matrix((_data, (_rows, _cols)), shape=(_train_size + vocab_size, embedding_dim))
-    all_y = np.c_(y, np.zeros((vocab_size, num_label)))  # todo numpy add array
+    all_y = np.concatenate((y, np.zeros((vocab_size, num_label))), 0)
     return all_x, all_y
 
 
+# name :['x', 'y', 'tx', 'ty', 'allx', 'ally', 'adj']
 def save_adjacency_matrix(x, name):
     file = open(str(output_path / ('ind.{}.' + name).format(dataset_name)), 'wb')
     pkl.dump(x, file)
@@ -100,16 +103,14 @@ def save_adjacency_matrix(x, name):
 
 
 def save_dataset_index(x, name):
-    file = open(str(output_path / ('ind.{}.' + name + '.index').format(dataset_name)), 'w')
-    pkl.dump(x, file)
-    file.close()
+    csv_utils.write(str(output_path / ('ind.{}.' + name + '.csv').format(dataset_name)), x)
 
 
 if __name__ == '__main__':
     # build clean data
     dataset, labels = read_data(dataset_path)
     print('remove_words')
-    dataset, vocabulary = remove_words(dataset)
+    dataset, vocabulary = remove_words(dataset, labels)
     csv_utils.write(output_path / 'labels.csv', labels)
     print('get dataset labels vocabulary document')
     np.random.shuffle(dataset)
@@ -167,12 +168,13 @@ if __name__ == '__main__':
                 appeared.add(window[i])
 
     print('count vocabulary and vocabulary frequency')
+    vocabulary_dict = {word_: _id for _id, word_ in enumerate(vocabulary)}
     word_pair_count = defaultdict(int)
-    for window in windows:
+    for _, window in enumerate(windows):
         num_window_ = len(window)
         for i in range(1, num_window_):
             for j in range(0, i):
-                word_i_id, word_j_id = vocabulary[window[i]], vocabulary[window[j]]
+                word_i_id, word_j_id = vocabulary_dict[window[i]], vocabulary_dict[window[j]]
                 if word_i_id != word_j_id:
                     word_pair_count[(word_i_id, word_j_id)] += 1
                     word_pair_count[(word_j_id, word_i_id)] += 1
@@ -186,8 +188,8 @@ if __name__ == '__main__':
         # pmi as weights
         pmi = log((1.0 * count / num_window) / (1.0 * word_freq_i * word_freq_j / (num_window * num_window)))
         if pmi > 0:
-            rows.append(train_size + word_freq_i)
-            cols.append(train_size + word_freq_j)
+            rows.append(train_size + word_i_id)
+            cols.append(train_size + word_j_id)
             weight.append(pmi)
 
     # doc word frequency
@@ -196,7 +198,7 @@ if __name__ == '__main__':
     for i in range(data_size):
         words = dataset[i]['words']
         for word in words:
-            word_id = vocabulary[word]
+            word_id = vocabulary_dict[word]
             doc_word_freq[(i, word_id)] += 1
 
     print('count word in document frequency')
@@ -215,7 +217,7 @@ if __name__ == '__main__':
         for word in words:
             if word in doc_word_set:
                 continue
-            word_id = vocabulary[word]
+            word_id = vocabulary_dict[word]
             freq = doc_word_freq[(i, word_id)]
             if i < train_size:
                 rows.append(i)
@@ -224,9 +226,7 @@ if __name__ == '__main__':
             cols.append(train_size + word_id)
             idf = log(1.0 * data_size / word_doc_freq[vocabulary[word_id]])
             weight.append(freq * idf)
-            doc_word_set.add(word_id)
+            doc_word_set.add(word)
     node_size = train_size + vocabulary_size + test_size
     adjacency_matrix = sp.csr_matrix((weight, (rows, cols)), shape=(node_size, node_size))
     save_adjacency_matrix(adjacency_matrix, 'adj')
-
-    info = {''}
