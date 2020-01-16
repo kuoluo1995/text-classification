@@ -4,6 +4,8 @@ import networkx as nx
 import pickle as pkl
 import scipy.sparse as sp
 
+from utils import csv_utils
+
 
 def parse_index_file(filename):
     """Parse index file."""
@@ -41,8 +43,8 @@ def load_data(path, dataset_name):
 
     features = sp.vstack((allx, tx)).tolil()
     labels = np.vstack((ally, ty))
-
-    train_idx = parse_index_file('{}/ind.{}.train.index'.format(path, dataset_name))
+    train_idx = csv_utils.read('{}/ind.{}.train.csv'.format(path, dataset_name))
+    # train_idx = parse_index_file('{}/ind.{}.train.index'.format(path, dataset_name))
     train_size = len(train_idx)
     test_size = tx.shape[0]
 

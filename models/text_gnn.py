@@ -60,6 +60,10 @@ class TextGNN:
             loss = tf.nn.softmax_cross_entropy_with_logits_v2(logits=gcn2, labels=self.labels)
             loss *= mask  # Mask the output of cross entropy loss
             loss = tf.reduce_mean(loss)
+            for _, var in vars1.items():
+                loss += self.weight_decay * tf.nn.l2_loss(var)
+            for _, var in vars2.items():
+                loss += self.weight_decay * tf.nn.l2_loss(var)
             self.loss = loss
 
         with tf.name_scope('accuracy'):
@@ -153,5 +157,11 @@ class TextGNN:
         feed_dict.update({self.labels: self.data_generator['y_test']})
         feed_dict.update({self.labels_mask: self.data_generator['mask_test']})
         feed_dict.update({self.keep_pro_tensor: 1.0})
-        result, labels = self.sess.run([self.target, self.label], feed_dict=feed_dict)
+        result = list()
+        labels = list()
+        result_, labels_, accuarcy = self.sess.run([self.target, self.label, self.accuracy], feed_dict=feed_dict)
+        for i in range(len(self.data_generator['mask_test'])):
+            if self.data_generator['mask_test'][i]:
+                result.append(result_[i])
+                labels.append(labels_[i])
         return result, labels

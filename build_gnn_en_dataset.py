@@ -15,7 +15,7 @@ min_words_freq = 5  # to remove rare words
 train_scale = 0.9  # slect 90% training set
 window_size = 20  # word co-occurence with context windows
 dataset_fold = Path('/home/yf/dataset/{}/train'.format(dataset_name)).absolute()  # E:/Dataset/{}/train
-output_dir = Path('../dataset').absolute()
+output_dir = Path('dataset').absolute()
 output_path = output_dir / dataset_name
 output_path.mkdir(exist_ok=True, parents=True)
 
@@ -72,7 +72,7 @@ def build_adjacency_matrix(_dataset, num_label):
 
     y = np.zeros((_data_size, num_label))
     for i in range(_data_size):
-        y[i, dataset[i]['label_id']] = 1
+        y[i, _dataset[i]['label_id']] = 1
     return x, y, x_row, x_col, x_data
 
 
@@ -151,6 +151,7 @@ if __name__ == '__main__':
     save_adjacency_matrix(all_y, 'ally')
 
     # Doc word heterogeneous graph
+    # word co-occurence with context windows
     print('build window')
     windows = list()
     for item_ in dataset:
@@ -182,6 +183,7 @@ if __name__ == '__main__':
             for j in range(0, i):
                 word_i_id, word_j_id = vocabulary_dict[window[i]], vocabulary_dict[window[j]]
                 if word_i_id != word_j_id:
+                    # two orders
                     word_pair_count[(word_i_id, word_j_id)] += 1
                     word_pair_count[(word_j_id, word_i_id)] += 1
 

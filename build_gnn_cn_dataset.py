@@ -12,7 +12,7 @@ min_words_freq = 5  # to remove rare words
 train_scale = 0.9  # slect 90% training set
 window_size = 20  # word co-occurence with context windows
 dataset_path = Path('/home/yf/dataset/{}/{}.txt'.format(dataset_name, dataset_name)).absolute()  # ./data/{}/{}.txt
-output_dir = Path('../dataset').absolute()
+output_dir = Path('dataset').absolute()
 output_path = output_dir / dataset_name
 output_path.mkdir(exist_ok=True, parents=True)
 # ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'adj']
@@ -46,6 +46,7 @@ def remove_words(_dataset, _labels):
     vocab = set()
     for i, _item in enumerate(_dataset):
         _words = list()
+        print('remove {}/{}'.format(i, len(_dataset)))
         for _word in _item['words']:
             if _word not in stop_words and global_words_freq[_word] >= min_words_freq:
                 # build vocabulary

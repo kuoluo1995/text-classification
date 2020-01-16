@@ -3,8 +3,8 @@ save_freq: 1 # 每多少轮存入 tensorboard
 batch_size: 64 # 每批训练大小
 
 dataset:
-    dataset_name: aclImdb
-    path: dataset/aclImdb/
+    dataset_name: cnews_voc
+    path: dataset/cnews_voc/
 
 model:
     name: text_gnn

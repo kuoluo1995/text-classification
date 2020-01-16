@@ -1,0 +1,15 @@
+num_epochs: 200  # 总迭代轮次
+save_freq: 1 # 每多少轮存入 tensorboard
+batch_size: 64 # 每批训练大小
+
+dataset:
+    dataset_name: cnews
+    path: dataset/cnews/
+
+model:
+    name: text_gnn
+    checkpoint_dir: ./_checkpoint
+    num_hidden: 16  # Number of units in hidden layer 1.
+    learning_rate: 0.02 # 学习率
+    keep_pro: 0.5 # dropout保留比例
+    weight_decay: 0 # L2 regularization

@@ -13,7 +13,7 @@ min_words_freq = 5  # to remove rare words
 train_scale = 0.9  # slect 90% training set
 window_size = 20  # word co-occurence with context windows
 dataset_path = Path('/home/yf/dataset/cnews/cnews.txt').absolute()  # ./data/{}/{}.txt
-output_dir = Path('../dataset').absolute()
+output_dir = Path('dataset').absolute()
 output_path = output_dir / dataset_name
 output_path.mkdir(exist_ok=True, parents=True)
 # ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'adj']

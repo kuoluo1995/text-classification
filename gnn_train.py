@@ -15,7 +15,7 @@ def train(args):
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '3'
     config = get_config('gnn/aclImdb')
-    config['tag'] = 'my_dataset'
+    config['tag'] = 'my_dataset2'
     train(config)
