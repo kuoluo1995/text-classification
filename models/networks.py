@@ -1,12 +1,11 @@
 import tensorflow as tf
 
 
-def gcn_layer(x, in_channels, out_channels, adjacency_matrix, keep_pro, is_sparse, num_nonzero=None, name='gcn_layer'):
+def gcn_layer(x, adjacency_matrix, in_channels, out_channels, keep_pro, is_sparse, num_nonzero=None, name='gcn_layer'):
     with tf.name_scope(name):
         with tf.variable_scope('{}_vars'.format(name)):
             weights = tf.get_variable('weights', [in_channels, out_channels],
                                       initializer=tf.initializers.glorot_normal())
-            bias = tf.get_variable('bias', [out_channels], initializer=tf.initializers.constant())
         if is_sparse:
             x = sparse_dropout(x, keep_pro, num_nonzero)
             x = tf.sparse_tensor_dense_matmul(x, weights)

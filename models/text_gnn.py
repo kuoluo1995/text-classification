@@ -1,38 +1,30 @@
-from pathlib import Path
-
 import numpy as np
 import tensorflow as tf
-
-from gnn.load_data import preprocess_features, preprocess_adj
-from gnn.networks import gcn_layer
+from numpy import argmax
+from models.networks import gcn_layer
+from pathlib import Path
 
 
 class TextGNN:
-    def __init__(self, sess, tag, save_freq, num_epochs, dataset_name, train_generator, name, checkpoint_dir,
-                 num_filters, keep_pro, learning_rate, l2, **kwargs):
+    def __init__(self, sess, tag, save_freq, num_epochs, dataset_name, data_generator, name, checkpoint_dir,
+                 num_hidden, keep_pro, learning_rate, weight_decay, **kwargs):
         self.sess = sess
         self.tag = tag
         self.num_epochs = num_epochs
         self.save_freq = save_freq
 
         self.dataset_name = dataset_name
-        self.train_generator = train_generator
-        self.data = {}
-        self.A, self.X, self.data['y_train'], self.data['y_valid'], self.data['y_test'], \
-        self.data['mask_train'], self.data['mask_valid'], self.data['mask_test'] = train_generator
-        self.seq_length = self.X.shape[1]
-        self.num_class = self.data['y_train'].shape[1]
-        self.num_node = self.X.shape[0]
-        self.X = preprocess_features(self.X)
-        self.A = preprocess_adj(self.A)
+        self.data_generator = data_generator
+        self.input_dim = data_generator['input_dim']  # todo check
+        self.num_node = data_generator['num_node']
+        self.num_class = data_generator['num_class']
 
         self.name = name
         self.checkpoint_dir = Path(checkpoint_dir)
-
-        self.num_filters = num_filters
+        self.num_hidden = num_hidden
         self.keep_pro = keep_pro
         self.learning_rate = learning_rate
-        self.l2 = np.float(l2)
+        self.weight_decay = np.float(weight_decay)
         self.build_networks()
         self.train_saver = tf.train.Saver()
         self.best_saver = tf.train.Saver()
@@ -41,9 +33,8 @@ class TextGNN:
         # Input data.
         with tf.name_scope('inputs'):
             # Define Placeholders
-            self.features = tf.sparse_placeholder(tf.float32, shape=[self.num_node, self.seq_length], name='features')
-            self.adjacency_matrix = tf.sparse_placeholder(tf.float32, shape=[self.num_node, self.num_node],
-                                                          name='support')
+            self.features = tf.sparse_placeholder(tf.float32, shape=[self.num_node, self.input_dim], name='features')
+            self.support = tf.sparse_placeholder(tf.float32, shape=[self.num_node, self.num_node], name='support')
             self.labels = tf.placeholder(tf.float32, shape=[None, self.num_class], name='labels')
             self.labels_mask = tf.placeholder(tf.int32, name='labels_mask')
             self.keep_pro_tensor = tf.placeholder(tf.float32, name='keep_pro')
@@ -51,12 +42,13 @@ class TextGNN:
 
         with tf.name_scope('gnn'):
             # Construct Computational Graph
-            gcn1, vars1 = gcn_layer(self.features, self.seq_length, self.num_filters, self.adjacency_matrix,
-                                    self.keep_pro_tensor, True, self.num_nonzero, name='gcn_layer1')
+            gcn1, vars1 = gcn_layer(self.features, self.support, in_channels=self.input_dim,
+                                    out_channels=self.num_hidden, keep_pro=self.keep_pro_tensor, is_sparse=True,
+                                    num_nonzero=self.num_nonzero, name='gcn_layer1')
             gcn1 = tf.nn.relu(gcn1)
 
-            gcn2, vars2 = gcn_layer(gcn1, self.num_filters, self.num_class, self.adjacency_matrix,
-                                    self.keep_pro_tensor, False, name='gcn_layer2')
+            gcn2, vars2 = gcn_layer(gcn1, self.support, in_channels=self.num_hidden, out_channels=self.num_class,
+                                    keep_pro=self.keep_pro_tensor, is_sparse=False, name='gcn_layer2')
 
         mask = tf.cast(self.labels_mask, dtype=tf.float32)  # Cast masking from boolean to float todo check?
         mask /= tf.reduce_mean(mask)  # Compute mean for mask
@@ -66,11 +58,12 @@ class TextGNN:
             loss = tf.nn.softmax_cross_entropy_with_logits_v2(logits=gcn2, labels=self.labels)
             loss *= mask  # Mask the output of cross entropy loss
             loss = tf.reduce_mean(loss)
-            self.loss = loss + self.l2 * (tf.nn.l2_loss(vars1) + tf.nn.l2_loss(vars2))
+            self.loss = loss + self.weight_decay * (tf.nn.l2_loss(vars1) + tf.nn.l2_loss(vars2))
 
         with tf.name_scope('accuracy'):
             # Identity position where prediction matches labels
-            correct_pred = tf.equal(tf.argmax(gcn2, 1), tf.argmax(self.labels, 1))
+            self.target = tf.argmax(gcn2, 1)
+            correct_pred = tf.equal(self.target, tf.argmax(self.labels, 1))
             # Cast result to float
             accuracy = tf.cast(correct_pred, tf.float32)
             accuracy *= mask  # Apply mask on computed accuracy
@@ -93,8 +86,8 @@ class TextGNN:
         writer = tf.summary.FileWriter('../tensorboard_logs/{}/{}/{}'.format(self.dataset_name, self.name, self.tag),
                                        self.sess.graph)
         best_glob_accuracy = 0
-        train_size = 1
-        eval_size = 1
+        train_size = self.data_generator['train_size']
+        eval_size = self.data_generator['test_size']
         print('开始训练')
         for epoch in range(self.num_epochs):
             train_loss = 0
@@ -102,11 +95,11 @@ class TextGNN:
             for step in range(train_size):
                 # Training step
                 _, loss, accuracy = self.sess.run([optimizer, self.loss, self.accuracy],
-                                                  feed_dict={self.features: self.X,
-                                                             self.adjacency_matrix: self.A,
-                                                             self.num_nonzero: self.X[1].shape,
-                                                             self.labels: self.data['y_train'],
-                                                             self.labels_mask: self.data['mask_train'],
+                                                  feed_dict={self.features: self.data_generator['features'],
+                                                             self.support: self.data_generator['adjacency_matrix'],
+                                                             self.num_nonzero: self.data_generator['num_nonzero'],
+                                                             self.labels: self.data_generator['y_train'],
+                                                             self.labels_mask: self.data_generator['mask_train'],
                                                              self.keep_pro_tensor: self.keep_pro})
                 train_loss += loss
                 train_accuracy += accuracy
@@ -114,11 +107,11 @@ class TextGNN:
             eval_accuracy = 0
             for step in range(eval_size):
                 loss, accuracy = self.sess.run([self.loss, self.accuracy],
-                                               feed_dict={self.features: self.X,
-                                                          self.adjacency_matrix: self.A,
-                                                          self.num_nonzero: self.X[1].shape,
-                                                          self.labels: self.data['y_valid'],
-                                                          self.labels_mask: self.data['mask_valid'],
+                                               feed_dict={self.features: self.data_generator['features'],
+                                                          self.support: self.data_generator['adjacency_matrix'],
+                                                          self.num_nonzero: self.data_generator['num_nonzero'],
+                                                          self.labels: self.data_generator['y_test'],
+                                                          self.labels_mask: self.data_generator['mask_test'],
                                                           self.keep_pro_tensor: 1.0})
                 eval_loss += loss
                 eval_accuracy += accuracy
@@ -149,3 +142,26 @@ class TextGNN:
             saver.restore(self.sess, checkpoint)
         else:
             print('Loading checkpoint failed')
+
+    def test(self):
+        init_op = tf.global_variables_initializer()
+        self.sess.run(init_op)
+        self.load(self.checkpoint_dir / 'best', self.best_saver)
+        result = list()
+        labels = list()
+        print('开始测试')
+        eval_size = 1
+        for step in range(eval_size):
+            loss, accuracy, pre_labels = self.sess.run([self.loss, self.accuracy, self.target],
+                                                       feed_dict={self.features: self.data_generator['features'],
+                                                                  self.support: self.data_generator['adjacency_matrix'],
+                                                                  self.num_nonzero: self.data_generator['num_nonzero'],
+                                                                  self.labels: self.data_generator['y_test'],
+                                                                  self.labels_mask: self.data_generator['mask_test'],
+                                                                  self.keep_pro_tensor: 1.0})
+            for i in range(pre_labels.shape[0]):
+                label_id = argmax(self.data_generator['y_test'][i])
+                result.append(pre_labels[i])
+                labels.append(label_id)
+
+        return result, labels

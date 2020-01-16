@@ -1,7 +1,7 @@
-import pickle
 import sys
 import numpy as np
 import networkx as nx
+import pickle as pkl
 import scipy.sparse as sp
 
 
@@ -20,43 +20,54 @@ def sample_mask(idx, l):
     return np.array(mask, dtype=np.bool)
 
 
-def load_network(path, dataset_str):
-    names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
-    objects = []
-    for i in range(len(names)):
-        with open("{}/ind.{}.{}".format(path, dataset_str, names[i]), 'rb') as f:
-            if sys.version_info > (3, 0):
-                objects.append(pickle.load(f, encoding='latin1'))
-            else:
-                objects.append(pickle.load(f))
+def load_adjacency_matrix(path, dataset_name, name):
+    file = open(path + '/ind.{}.{}'.format(dataset_name, name), 'rb')
+    if sys.version_info > (3, 0):
+        x = pkl.load(file, encoding='latin1')
+    else:
+        x = pkl.load(file)
+    return x
 
-    x, y, tx, ty, allx, ally, graph = tuple(objects)
-    test_idx_reorder = parse_index_file("{}/ind.{}.test.index".format(path, dataset_str))
-    test_idx_range = np.sort(test_idx_reorder)
+
+def load_data(path, dataset_name):
+    # x = load_adjacency_matrix(path, dataset_name, 'x')
+    # y = load_adjacency_matrix(path, dataset_name, 'y')
+    tx = load_adjacency_matrix(path, dataset_name, 'tx')
+    ty = load_adjacency_matrix(path, dataset_name, 'ty')
+    allx = load_adjacency_matrix(path, dataset_name, 'allx')
+    ally = load_adjacency_matrix(path, dataset_name, 'ally')
+    adj = load_adjacency_matrix(path, dataset_name, 'adj')
 
     features = sp.vstack((allx, tx)).tolil()
-    features[test_idx_reorder, :] = features[test_idx_range, :]
-    adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
-
     labels = np.vstack((ally, ty))
-    labels[test_idx_reorder, :] = labels[test_idx_range, :]
 
-    idx_test = test_idx_range.tolist()
-    idx_train = range(len(y))
-    idx_val = range(len(y), len(y) + 500)
+    train_idxs = parse_index_file("{}/ind.{}.train.index".format(path, dataset_name))
+    train_size = len(train_idxs)
+    test_size = tx.shape[0]
 
-    train_mask = sample_mask(idx_train, labels.shape[0])
-    val_mask = sample_mask(idx_val, labels.shape[0])
-    test_mask = sample_mask(idx_test, labels.shape[0])
+    idx_train = range(train_size)
+    idx_test = range(allx.shape[0], allx.shape[0] + test_size)
+
+    mask_train = sample_mask(idx_train, labels.shape[0])
+    mask_test = sample_mask(idx_test, labels.shape[0])
 
     y_train = np.zeros(labels.shape)
-    y_val = np.zeros(labels.shape)
     y_test = np.zeros(labels.shape)
-    y_train[train_mask, :] = labels[train_mask, :]
-    y_val[val_mask, :] = labels[val_mask, :]
-    y_test[test_mask, :] = labels[test_mask, :]
+    y_train[mask_train, :] = labels[mask_train, :]
+    y_test[mask_test, :] = labels[mask_test, :]
 
-    return adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask
+    # adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
+    adjacency_matrix = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
+    # 'adj': adjacency_matrix, 'feature': features
+    num_node = features.shape[0]
+    input_dim = features.shape[1]
+    features = preprocess_features(features)
+    num_nonzero = features[1].shape
+    adjacency_matrix = preprocess_adj(adjacency_matrix)
+    return {'train_size': train_size, 'test_size': test_size, 'y_train': y_train, 'y_test': y_test,
+            'mask_train': mask_train, 'mask_test': mask_test, 'num_node': num_node, 'input_dim': input_dim,
+            'num_class': y_train.shape[1], 'num_nonzero': num_nonzero, 'features': features,
+            'adjacency_matrix': adjacency_matrix}
 
 
 def sparse_to_tuple(sparse_mx):
