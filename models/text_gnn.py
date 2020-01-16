@@ -15,9 +15,9 @@ class TextGNN:
 
         self.dataset_name = dataset_name
         self.data_generator = data_generator
-        self.input_dim = data_generator['input_dim']  # todo check
-        self.num_node = data_generator['num_node']
+        self.input_shape = data_generator['input_shape']
         self.num_class = data_generator['num_class']
+        self.num_support = data_generator['num_support']
 
         self.name = name
         self.checkpoint_dir = Path(checkpoint_dir)
@@ -33,8 +33,9 @@ class TextGNN:
         # Input data.
         with tf.name_scope('inputs'):
             # Define Placeholders
-            self.features = tf.sparse_placeholder(tf.float32, shape=[self.num_node, self.input_dim], name='features')
-            self.support = tf.sparse_placeholder(tf.float32, shape=[self.num_node, self.num_node], name='support')
+            self.support = [tf.sparse_placeholder(tf.float32, name='support_{}'.format(i)) for i in
+                            range(self.num_support)]
+            self.features = tf.sparse_placeholder(tf.float32, shape=self.input_shape, name='features')
             self.labels = tf.placeholder(tf.float32, shape=[None, self.num_class], name='labels')
             self.labels_mask = tf.placeholder(tf.int32, name='labels_mask')
             self.keep_pro_tensor = tf.placeholder(tf.float32, name='keep_pro')
@@ -42,15 +43,16 @@ class TextGNN:
 
         with tf.name_scope('gnn'):
             # Construct Computational Graph
-            gcn1, vars1 = gcn_layer(self.features, self.support, in_channels=self.input_dim,
+            gcn1, vars1 = gcn_layer(self.features, self.support, in_channels=self.input_shape[-1],
                                     out_channels=self.num_hidden, keep_pro=self.keep_pro_tensor, is_sparse=True,
                                     num_nonzero=self.num_nonzero, name='gcn_layer1')
             gcn1 = tf.nn.relu(gcn1)
 
             gcn2, vars2 = gcn_layer(gcn1, self.support, in_channels=self.num_hidden, out_channels=self.num_class,
                                     keep_pro=self.keep_pro_tensor, is_sparse=False, name='gcn_layer2')
+        # variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
 
-        mask = tf.cast(self.labels_mask, dtype=tf.float32)  # Cast masking from boolean to float todo check?
+        mask = tf.cast(self.labels_mask, dtype=tf.float32)  # Cast masking from boolean to float
         mask /= tf.reduce_mean(mask)  # Compute mean for mask
 
         with tf.name_scope('loss'):
@@ -58,12 +60,13 @@ class TextGNN:
             loss = tf.nn.softmax_cross_entropy_with_logits_v2(logits=gcn2, labels=self.labels)
             loss *= mask  # Mask the output of cross entropy loss
             loss = tf.reduce_mean(loss)
-            self.loss = loss + self.weight_decay * (tf.nn.l2_loss(vars1) + tf.nn.l2_loss(vars2))
+            self.loss = loss
 
         with tf.name_scope('accuracy'):
             # Identity position where prediction matches labels
             self.target = tf.argmax(gcn2, 1)
-            correct_pred = tf.equal(self.target, tf.argmax(self.labels, 1))
+            self.label = tf.argmax(self.labels, 1)
+            correct_pred = tf.equal(self.target, self.label)
             # Cast result to float
             accuracy = tf.cast(correct_pred, tf.float32)
             accuracy *= mask  # Apply mask on computed accuracy
@@ -73,9 +76,9 @@ class TextGNN:
             loss_scalar = tf.summary.scalar('train_loss', self.loss)
             accuracy_scalar = tf.summary.scalar('train_accuracy', self.accuracy)
             self.eval_loss = tf.placeholder(tf.float32, name='eval_loss')
-            eval_loss_scalar = tf.summary.scalar('loss', self.eval_loss)
+            eval_loss_scalar = tf.summary.scalar('eval_loss', self.eval_loss)
             self.eval_accuracy = tf.placeholder(tf.float32, name='eval_accuracy')
-            eval_accuracy_scalar = tf.summary.scalar('accuracy', self.eval_accuracy)
+            eval_accuracy_scalar = tf.summary.scalar('eval_accuracy', self.eval_accuracy)
             self.scalar_summary = tf.summary.merge(
                 [loss_scalar, accuracy_scalar, eval_loss_scalar, eval_accuracy_scalar])
 
@@ -86,43 +89,37 @@ class TextGNN:
         writer = tf.summary.FileWriter('../tensorboard_logs/{}/{}/{}'.format(self.dataset_name, self.name, self.tag),
                                        self.sess.graph)
         best_glob_accuracy = 0
-        train_size = self.data_generator['train_size']
-        eval_size = self.data_generator['test_size']
         print('开始训练')
         for epoch in range(self.num_epochs):
-            train_loss = 0
-            train_accuracy = 0
-            for step in range(train_size):
-                # Training step
-                _, loss, accuracy = self.sess.run([optimizer, self.loss, self.accuracy],
-                                                  feed_dict={self.features: self.data_generator['features'],
-                                                             self.support: self.data_generator['adjacency_matrix'],
-                                                             self.num_nonzero: self.data_generator['num_nonzero'],
-                                                             self.labels: self.data_generator['y_train'],
-                                                             self.labels_mask: self.data_generator['mask_train'],
-                                                             self.keep_pro_tensor: self.keep_pro})
-                train_loss += loss
-                train_accuracy += accuracy
-            eval_loss = 0
-            eval_accuracy = 0
-            for step in range(eval_size):
-                loss, accuracy = self.sess.run([self.loss, self.accuracy],
-                                               feed_dict={self.features: self.data_generator['features'],
-                                                          self.support: self.data_generator['adjacency_matrix'],
-                                                          self.num_nonzero: self.data_generator['num_nonzero'],
-                                                          self.labels: self.data_generator['y_test'],
-                                                          self.labels_mask: self.data_generator['mask_test'],
-                                                          self.keep_pro_tensor: 1.0})
-                eval_loss += loss
-                eval_accuracy += accuracy
+            # Training step
+            feed_dict = dict()
+            feed_dict.update({self.features: self.data_generator['features']})
+            feed_dict.update(
+                {self.support[i]: self.data_generator['support'][i] for i in range(self.data_generator['num_support'])})
+            feed_dict.update({self.num_nonzero: self.data_generator['num_nonzero']})
+            feed_dict.update({self.labels: self.data_generator['y_train']})
+            feed_dict.update({self.labels_mask: self.data_generator['mask_train']})
+            feed_dict.update({self.keep_pro_tensor: self.keep_pro})
+            _, train_loss, train_accuracy = self.sess.run([optimizer, self.loss, self.accuracy], feed_dict=feed_dict)
+
+            # Evaling step
+            feed_dict = dict()
+            feed_dict.update({self.features: self.data_generator['features']})
+            feed_dict.update(
+                {self.support[i]: self.data_generator['support'][i] for i in range(self.data_generator['num_support'])})
+            feed_dict.update({self.num_nonzero: self.data_generator['num_nonzero']})
+            feed_dict.update({self.labels: self.data_generator['y_test']})
+            feed_dict.update({self.labels_mask: self.data_generator['mask_test']})
+            feed_dict.update({self.keep_pro_tensor: 1.0})
+            eval_loss, eval_accuracy, _, _ = self.sess.run([self.loss, self.accuracy, self.target, self.label],
+                                                           feed_dict=feed_dict)
             print('第{}轮训练：train_loss:{},train_accuracy:{},eval_loss:{},eval_accuracy:{}'
-                  .format(epoch + 1, train_loss / train_size, train_accuracy / train_size, eval_loss / eval_size,
-                          eval_accuracy / eval_size))
+                  .format(epoch + 1, train_loss, train_accuracy, eval_loss, eval_accuracy))
             summary = self.sess.run(self.scalar_summary,
-                                    feed_dict={self.loss: train_loss / train_size,
-                                               self.accuracy: train_accuracy / train_size,
-                                               self.eval_loss: eval_loss / eval_size,
-                                               self.eval_accuracy: eval_accuracy / eval_size})
+                                    feed_dict={self.loss: train_loss,
+                                               self.accuracy: train_accuracy,
+                                               self.eval_loss: eval_loss,
+                                               self.eval_accuracy: eval_accuracy})
             writer.add_summary(summary, epoch)
             if epoch % self.save_freq == 0:
                 self.save(self.checkpoint_dir / 'train', self.train_saver, epoch)
@@ -147,21 +144,14 @@ class TextGNN:
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         self.load(self.checkpoint_dir / 'best', self.best_saver)
-        result = list()
-        labels = list()
         print('开始测试')
-        eval_size = 1
-        for step in range(eval_size):
-            loss, accuracy, pre_labels = self.sess.run([self.loss, self.accuracy, self.target],
-                                                       feed_dict={self.features: self.data_generator['features'],
-                                                                  self.support: self.data_generator['adjacency_matrix'],
-                                                                  self.num_nonzero: self.data_generator['num_nonzero'],
-                                                                  self.labels: self.data_generator['y_test'],
-                                                                  self.labels_mask: self.data_generator['mask_test'],
-                                                                  self.keep_pro_tensor: 1.0})
-            for i in range(pre_labels.shape[0]):
-                label_id = argmax(self.data_generator['y_test'][i])
-                result.append(pre_labels[i])
-                labels.append(label_id)
-
+        feed_dict = dict()
+        feed_dict.update({self.features: self.data_generator['features']})
+        feed_dict.update(
+            {self.support[i]: self.data_generator['support'][i] for i in range(self.data_generator['num_support'])})
+        feed_dict.update({self.num_nonzero: self.data_generator['num_nonzero']})
+        feed_dict.update({self.labels: self.data_generator['y_test']})
+        feed_dict.update({self.labels_mask: self.data_generator['mask_test']})
+        feed_dict.update({self.keep_pro_tensor: 1.0})
+        result, labels = self.sess.run([self.target, self.label], feed_dict=feed_dict)
         return result, labels

@@ -7,10 +7,9 @@ from math import log
 from nltk.corpus import stopwords
 from pathlib import Path
 from scripts.build_en_dataset import clean_str
-from utils import yaml_utils, csv_utils
+from utils import csv_utils
 
 dataset_name = 'aclImdb'
-embedding_file = None
 embedding_dim = 300  # 词向量维度
 min_words_freq = 5  # to remove rare words
 train_scale = 0.9  # slect 90% training set
@@ -19,7 +18,6 @@ dataset_fold = Path('/home/yf/dataset/{}/train'.format(dataset_name)).absolute()
 output_dir = Path('../dataset').absolute()
 output_path = output_dir / dataset_name
 output_path.mkdir(exist_ok=True, parents=True)
-# ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'adj']
 
 global_words_freq = defaultdict(int)  # 统计全部单词评论
 
@@ -92,6 +90,7 @@ def build_all_adjacency_matrix(_rows, _cols, _data, y, vocab_size):
     return all_x, all_y
 
 
+# name :['x', 'y', 'tx', 'ty', 'allx', 'ally', 'adj']
 def save_adjacency_matrix(x, name):
     file = open(str(output_path / ('ind.{}.' + name).format(dataset_name)), 'wb')
     pkl.dump(x, file)
@@ -106,6 +105,7 @@ if __name__ == '__main__':
     dataset = list()
     labels = list()
     document = list()
+    document_id = 0
     # build clean data
     for _type in dataset_fold.iterdir():
         if _type.is_dir() and _type.name != 'unsup':
@@ -113,8 +113,8 @@ if __name__ == '__main__':
             label_id = labels.index(_type.name)
             for item in _type.iterdir():
                 document.append(str(item))
-                dataset.append(
-                    {'document_id': document.index(str(item)), 'label_id': label_id, 'words': read_data(item)})
+                dataset.append({'document_id': document_id, 'label_id': label_id, 'words': read_data(item)})
+                document_id += 1
     print('remove_words')
     dataset, vocabulary = remove_words(dataset)
     csv_utils.write(output_path / 'labels.csv', labels)
@@ -174,12 +174,13 @@ if __name__ == '__main__':
                 appeared.add(window[i])
 
     print('count vocabulary and vocabulary frequency')
+    vocabulary_dict = {word_: _id for _id, word_ in enumerate(vocabulary)}
     word_pair_count = defaultdict(int)
-    for window in windows:
+    for _, window in enumerate(windows):
         num_window_ = len(window)
         for i in range(1, num_window_):
             for j in range(0, i):
-                word_i_id, word_j_id = vocabulary.index(window[i]), vocabulary.index(window[j])
+                word_i_id, word_j_id = vocabulary_dict[window[i]], vocabulary_dict[window[j]]
                 if word_i_id != word_j_id:
                     word_pair_count[(word_i_id, word_j_id)] += 1
                     word_pair_count[(word_j_id, word_i_id)] += 1
@@ -193,8 +194,8 @@ if __name__ == '__main__':
         # pmi as weights
         pmi = log((1.0 * count / num_window) / (1.0 * word_freq_i * word_freq_j / (num_window * num_window)))
         if pmi > 0:
-            rows.append(train_size + word_freq_i)
-            cols.append(train_size + word_freq_j)
+            rows.append(train_size + word_i_id)
+            cols.append(train_size + word_j_id)
             weight.append(pmi)
 
     # doc word frequency
@@ -203,7 +204,7 @@ if __name__ == '__main__':
     for i in range(data_size):
         words = dataset[i]['words']
         for word in words:
-            word_id = vocabulary[word]
+            word_id = vocabulary_dict[word]
             doc_word_freq[(i, word_id)] += 1
 
     print('count word in document frequency')
@@ -222,7 +223,7 @@ if __name__ == '__main__':
         for word in words:
             if word in doc_word_set:
                 continue
-            word_id = vocabulary[word]
+            word_id = vocabulary_dict[word]
             freq = doc_word_freq[(i, word_id)]
             if i < train_size:
                 rows.append(i)
@@ -231,9 +232,7 @@ if __name__ == '__main__':
             cols.append(train_size + word_id)
             idf = log(1.0 * data_size / word_doc_freq[vocabulary[word_id]])
             weight.append(freq * idf)
-            doc_word_set.add(word_id)
+            doc_word_set.add(word)
     node_size = train_size + vocabulary_size + test_size
     adjacency_matrix = sp.csr_matrix((weight, (rows, cols)), shape=(node_size, node_size))
     save_adjacency_matrix(adjacency_matrix, 'adj')
-
-    info = {''}

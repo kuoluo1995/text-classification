@@ -100,6 +100,11 @@ python scripts/build_en_dataset.py
 利用原数据data/[aclImdb](https://pan.baidu.com/s/15MHl3pzndu5AaDYaL-T4jQ)，预处理，并把预处理后的结果保存到dataset/aclImdb里面。
 这里注意，之前的中文数据集由于不大，所以我就一次性晒到一个文件里面了。
 而英文的数据集相对较大，所以我这里生成的训练和测试数据里面的input是地址。到训练的时候再读取内容进行翻译。(为了减少内存，不一次性全部处理了)
+##### 2.3.1.2 创建GCN的英文数据集
+```bash
+python scripts/build_gnn_en_dataset.py
+```
+这里注意gcn的数据集和我们平时做的数据集不同，都是些索引值和稀疏矩阵什么的。所以存储方式是二进制的。不便直接打开。
 #### 2.3.2 训练网络
 train.py里面运行的那一段就是这样的
 ```python
@@ -141,6 +146,11 @@ config = get_config('rnn/cnews')
 config = get_config('rnn/cnews')
 config['tag'] = 'cell_3'
 config['model']['num_layers'] = 3
+```
+##### 2.3.2.4 训练gcn模型
+注意这里获取的是gcn下的配置文件就好了。
+```python 
+config = get_config('gnn/aclImdb')
 ```
 #### 2.3.3 测试结果
 ```bash
@@ -491,7 +501,21 @@ weighted avg       0.66      0.66      0.65      2496
 [[936 312]
  [546 702]]
 ```
+5. gcn: 
+```
+              precision    recall  f1-score   support
 
+         neg       0.97      0.60      0.74     78093
+         pos       0.26      0.87      0.40     12500
+
+    accuracy                           0.64     90593
+   macro avg       0.61      0.74      0.57     90593
+weighted avg       0.87      0.64      0.70     90593
+
+混淆矩阵
+[[47157 30936]
+ [ 1593 10907]]
+```
 ### 3.2 训练可视化的结果
 #### 3.2.1 训练集的精确度
 ![](images/tensorboard_train_ac.png)
@@ -501,16 +525,21 @@ weighted avg       0.66      0.66      0.65      2496
 ![](images/tensorboard_eval_ac.png)
 #### 3.2.4 验证集的loss
 ![](images/tensorboard_eval_loss.png)
-#### 3.2.5 cnn网络架构
+#### 3.2.5 gcn的训练集和验证集loss和精度
+![](images/tensorboard_gcn.png)
+#### 3.2.6 cnn网络架构
 ![](images/cnn_graph.png)
-#### 3.2.5 rnn网络架构
+#### 3.2.7 rnn网络架构
 ![](images/rnn_graph.png)
-#### 3.2.5 adversarial cnn网络架构
+#### 3.2.8 adversarial cnn网络架构
 ![](images/adversarial_cnn_graph.png)
-#### 3.2.5 adversarial rnn网络架构
+#### 3.2.9 adversarial rnn网络架构
 ![](images/adversarial_rnn_graph.png)
+#### 3.2.10 gcn 网络架构
+![](images/gcn_graph.png)
 ## 4.参考
 1. [代码:CNN-RNN中文文本分类](https://github.com/gaussic/text-classification-cnn-rnn)
 2. [adversarial loss tensorflow的官方实现方式](https://github.com/tensorflow/models/tree/master/research/adversarial_text)
 3. [adversarial loss 其他人的实现方式](https://github.com/enry12/adversarial_training_methods)
 4. [adversarial loss 多任务的文本分类](https://github.com/FrankWork/fudan_mtl_reviews)
+5. [Graph Convolutional Networks for Text Classification. AAAI 2019的代码实现](https://github.com/yao8839836/text_gcn)

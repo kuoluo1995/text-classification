@@ -7,7 +7,7 @@ def read(path):
         reader = csv.reader(file, delimiter='\t')
         result = list()
         for row in reader:
-            result.append(row)
+            result.extend(row)
     return result
 
 

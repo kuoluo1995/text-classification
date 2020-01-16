@@ -17,7 +17,7 @@ def evaluate_model(args):
         result, labels = model.test()
 
         print('评估')
-        print(metrics.classification_report(labels, result, target_names=label_dict[0]))
+        print(metrics.classification_report(labels, result, target_names=label_dict))
         print('混淆矩阵')
         cm = metrics.confusion_matrix(labels, result)
         print(cm)
@@ -25,5 +25,5 @@ def evaluate_model(args):
 
 if __name__ == '__main__':
     config = get_config('gnn/aclImdb')
-    config['tag'] = 'base'
+    config['tag'] = 'v2'
     evaluate_model(config)

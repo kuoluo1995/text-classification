@@ -1,19 +1,34 @@
+import numpy as np
 import tensorflow as tf
 
 
-def gcn_layer(x, adjacency_matrix, in_channels, out_channels, keep_pro, is_sparse, num_nonzero=None, name='gcn_layer'):
-    with tf.name_scope(name):
-        with tf.variable_scope('{}_vars'.format(name)):
-            weights = tf.get_variable('weights', [in_channels, out_channels],
-                                      initializer=tf.initializers.glorot_normal())
+def glorot(shape, name=None):
+    """Glorot & Bengio (AISTATS 2010) init."""
+    init_range = np.sqrt(6.0 / (shape[0] + shape[1]))
+    initial = tf.random_uniform(shape, minval=-init_range, maxval=init_range, dtype=tf.float32)
+    return tf.Variable(initial, name=name)
+
+
+def gcn_layer(x, support, in_channels, out_channels, keep_pro, is_sparse, num_nonzero=None, name='gcn_layer'):
+    vars = {}
+    with tf.variable_scope('{}_vars'.format(name)):
+        for i in range(len(support)):
+            vars['weights_{}'.format(i)] = glorot([in_channels, out_channels], name='weights_{}'.format(i))
         if is_sparse:
             x = sparse_dropout(x, keep_pro, num_nonzero)
-            x = tf.sparse_tensor_dense_matmul(x, weights)
         else:
             x = tf.nn.dropout(x, keep_pro)
-            x = tf.matmul(x, weights)
-        support = tf.sparse_tensor_dense_matmul(adjacency_matrix, x)
-    return support, weights
+        # convolve
+        supports = list()
+        for i in range(len(support)):
+            if is_sparse:
+                pre_sup = vars['weights_{}'.format(i)]
+            else:
+                pre_sup = tf.matmul(x, vars['weights_{}'.format(i)])
+            support = tf.sparse_tensor_dense_matmul(support[i], pre_sup)
+            supports.append(support)
+        output = tf.add_n(supports)
+    return output, vars,
 
 
 def sparse_dropout(x, keep_pro, noise_shape):

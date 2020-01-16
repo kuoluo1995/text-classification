@@ -30,22 +30,23 @@ def load_adjacency_matrix(path, dataset_name, name):
 
 
 def load_data(path, dataset_name):
-    # x = load_adjacency_matrix(path, dataset_name, 'x')
-    # y = load_adjacency_matrix(path, dataset_name, 'y')
+    x = load_adjacency_matrix(path, dataset_name, 'x')
+    y = load_adjacency_matrix(path, dataset_name, 'y')
     tx = load_adjacency_matrix(path, dataset_name, 'tx')
     ty = load_adjacency_matrix(path, dataset_name, 'ty')
     allx = load_adjacency_matrix(path, dataset_name, 'allx')
     ally = load_adjacency_matrix(path, dataset_name, 'ally')
     adj = load_adjacency_matrix(path, dataset_name, 'adj')
+    # adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
 
     features = sp.vstack((allx, tx)).tolil()
     labels = np.vstack((ally, ty))
 
-    train_idxs = parse_index_file("{}/ind.{}.train.index".format(path, dataset_name))
-    train_size = len(train_idxs)
+    train_idx = parse_index_file('{}/ind.{}.train.index'.format(path, dataset_name))
+    train_size = len(train_idx)
     test_size = tx.shape[0]
 
-    idx_train = range(train_size)
+    idx_train = range(len(y))
     idx_test = range(allx.shape[0], allx.shape[0] + test_size)
 
     mask_train = sample_mask(idx_train, labels.shape[0])
@@ -55,19 +56,16 @@ def load_data(path, dataset_name):
     y_test = np.zeros(labels.shape)
     y_train[mask_train, :] = labels[mask_train, :]
     y_test[mask_test, :] = labels[mask_test, :]
-
-    # adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
-    adjacency_matrix = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
     # 'adj': adjacency_matrix, 'feature': features
-    num_node = features.shape[0]
-    input_dim = features.shape[1]
-    features = preprocess_features(features)
-    num_nonzero = features[1].shape
-    adjacency_matrix = preprocess_adj(adjacency_matrix)
+    adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
+    features = sp.identity(features.shape[0])  # featureless
+    features = preprocess_features(features)  # Some preprocessing todo check
+    num_support = 1
+    support = [preprocess_adj(adj) for _ in range(num_support)]
+
     return {'train_size': train_size, 'test_size': test_size, 'y_train': y_train, 'y_test': y_test,
-            'mask_train': mask_train, 'mask_test': mask_test, 'num_node': num_node, 'input_dim': input_dim,
-            'num_class': y_train.shape[1], 'num_nonzero': num_nonzero, 'features': features,
-            'adjacency_matrix': adjacency_matrix}
+            'mask_train': mask_train, 'mask_test': mask_test, 'input_shape': features[2], 'num_class': y_train.shape[1],
+            'num_nonzero': features[1].shape, 'features': features, 'support': support, 'num_support': num_support}
 
 
 def sparse_to_tuple(sparse_mx):
@@ -92,7 +90,7 @@ def sparse_to_tuple(sparse_mx):
 
 def preprocess_features(features):
     """Row-normalize feature matrix and convert to tuple representation"""
-    rowsum = np.array(features.sum(1))
+    rowsum = np.array(features.sum(1))  # todo check
     r_inv = np.power(rowsum, -1).flatten()
     r_inv[np.isinf(r_inv)] = 0.
     r_mat_inv = sp.diags(r_inv)
