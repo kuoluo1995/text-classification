@@ -1,9 +1,8 @@
+import yaml
 import jieba
 import numpy as np
 from collections import Counter
 from pathlib import Path
-
-from utils import yaml_utils
 
 dataset_name = 'cnews_voc'
 embedding_file = None
@@ -13,6 +12,13 @@ dataset_file = Path('../data/cnews/cnews.txt')
 output_dir = Path('../dataset').absolute()
 output_path = output_dir / dataset_name
 output_path.mkdir(exist_ok=True, parents=True)
+
+
+def yaml_write(path, data, encoding='utf-8'):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open('w', encoding=encoding) as file:
+        yaml.dump(data, file, allow_unicode=True)
 
 
 def read_data(path):
@@ -61,10 +67,10 @@ def build_dictionary(vocabulary, labels):
     for key, item in labels_dictionary.items():
         reverse_labels_dictionary[item] = key
     print('制作反向查询词典完成')
-    yaml_utils.write(output_path / 'dictionary.yaml',
-                     {'word_dictionary': dictionary, 'label_dictionary': labels_dictionary})
-    yaml_utils.write(output_path / 'reverse_dictionary.yaml',
-                     {'word_dictionary': reverse_dictionary, 'label_dictionary': reverse_labels_dictionary})
+    yaml_write(output_path / 'dictionary.yaml',
+               {'word_dictionary': dictionary, 'label_dictionary': labels_dictionary})
+    yaml_write(output_path / 'reverse_dictionary.yaml',
+               {'word_dictionary': reverse_dictionary, 'label_dictionary': reverse_labels_dictionary})
 
 
 def build_dataset(dataset, num_class, vocabulary_size):
@@ -74,15 +80,15 @@ def build_dataset(dataset, num_class, vocabulary_size):
     np.random.shuffle(dataset)
     train_dict = dataset[:int(dataset_len * 0.9)]
     eval_dict = dataset[int(dataset_len * 0.9):]
-    yaml_utils.write(output_path / 'train.yaml', train_dict)
-    yaml_utils.write(output_path / 'eval.yaml', eval_dict)
+    yaml_write(output_path / 'train.yaml', train_dict)
+    yaml_write(output_path / 'eval.yaml', eval_dict)
     info = {'vocabulary_size': vocabulary_size, 'num_class': num_class, 'embedding_dim': embedding_dim,
             'train_path': str(output_path / 'train.yaml'), 'eval_path': str(output_path / 'eval.yaml'),
             'dictionary_path': str(output_path / 'dictionary.yaml'),
             'reverse_dictionary_path': str(output_path / 'reverse_dictionary.yaml')}
     if embedding_file is not None:
         info.update({'embedding_path': str(output_path / 'embedding.yaml')})
-    yaml_utils.write(output_path / 'info.yaml', info)
+    yaml_write(output_path / 'info.yaml', info)
     print('导出字典,训练和验证集完成')
 
 

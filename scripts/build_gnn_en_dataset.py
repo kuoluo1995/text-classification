@@ -1,3 +1,5 @@
+import csv
+import re
 import nltk
 import numpy as np
 import pickle as pkl
@@ -6,8 +8,6 @@ from collections import defaultdict
 from math import log
 from nltk.corpus import stopwords
 from pathlib import Path
-from scripts.build_en_dataset import clean_str
-from utils import csv_utils
 
 dataset_name = 'aclImdb'
 embedding_dim = 300  # 词向量维度
@@ -15,11 +15,40 @@ min_words_freq = 5  # to remove rare words
 train_scale = 0.9  # slect 90% training set
 window_size = 20  # word co-occurence with context windows
 dataset_fold = Path('/home/yf/dataset/{}/train'.format(dataset_name)).absolute()  # E:/Dataset/{}/train
-output_dir = Path('dataset').absolute()
+output_dir = Path('../dataset').absolute()
 output_path = output_dir / dataset_name
 output_path.mkdir(exist_ok=True, parents=True)
 
 global_words_freq = defaultdict(int)  # 统计全部单词评论
+
+
+def clean_str(string):
+    """
+    Tokenization/string cleaning for all datasets except for SST.
+    Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
+    """
+    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+    string = re.sub(r"\'s", " \'s", string)
+    string = re.sub(r"\'ve", " \'ve", string)
+    string = re.sub(r"n\'t", " n\'t", string)
+    string = re.sub(r"\'re", " \'re", string)
+    string = re.sub(r"\'d", " \'d", string)
+    string = re.sub(r"\'ll", " \'ll", string)
+    string = re.sub(r",", " , ", string)
+    string = re.sub(r"!", " ! ", string)
+    string = re.sub(r"\(", " \( ", string)
+    string = re.sub(r"\)", " \) ", string)
+    string = re.sub(r"\?", " \? ", string)
+    string = re.sub(r"\s{2,}", " ", string)
+    return string.strip().lower()
+
+
+def csv_write(path, list_data):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open(mode='w', newline='') as file:
+        writer = csv.writer(file, delimiter='\t')
+        writer.writerow(list_data)
 
 
 def read_data(path):
@@ -98,7 +127,7 @@ def save_adjacency_matrix(x, name):
 
 
 def save_dataset_index(x, name):
-    csv_utils.write(str(output_path / ('ind.{}.' + name + '.csv').format(dataset_name)), x)
+    csv_write(str(output_path / ('ind.{}.' + name + '.csv').format(dataset_name)), x)
 
 
 if __name__ == '__main__':
@@ -117,7 +146,7 @@ if __name__ == '__main__':
                 document_id += 1
     print('remove_words')
     dataset, vocabulary = remove_words(dataset)
-    csv_utils.write(output_path / 'labels.csv', labels)
+    csv_write(output_path / 'labels.csv', labels)
     print('get dataset labels vocabulary document')
     np.random.shuffle(dataset)
     data_size = len(dataset)

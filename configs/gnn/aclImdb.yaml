@@ -1,6 +1,5 @@
 num_epochs: 200  # 总迭代轮次
-save_freq: 1 # 每多少轮存入 tensorboard
-batch_size: 64 # 每批训练大小
+save_freq: 20 # 每多少轮存入 tensorboard
 
 dataset:
     dataset_name: aclImdb

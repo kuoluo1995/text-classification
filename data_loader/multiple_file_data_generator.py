@@ -1,5 +1,4 @@
 import numpy as np
-
 from scripts.build_en_dataset import read_data
 from utils import yaml_utils
 

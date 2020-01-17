@@ -1,5 +1,4 @@
 import tensorflow as tf
-
 from models.text_adversarial_rnn import TextAdversarialRNN
 
 

@@ -1,13 +1,12 @@
 import numpy as np
 import tensorflow as tf
-from numpy import argmax
 from models.networks import gcn_layer
 from pathlib import Path
 
 
 class TextGNN:
-    def __init__(self, sess, tag, save_freq, num_epochs, dataset_name, data_generator, name, checkpoint_dir,
-                 num_hidden, keep_pro, learning_rate, weight_decay, **kwargs):
+    def __init__(self, sess, tag, save_freq, num_epochs, dataset_name, input_shape, num_class, num_support,
+                 data_generator, name, checkpoint_dir, num_hidden, keep_pro, learning_rate, weight_decay, **kwargs):
         self.sess = sess
         self.tag = tag
         self.num_epochs = num_epochs
@@ -15,9 +14,9 @@ class TextGNN:
 
         self.dataset_name = dataset_name
         self.data_generator = data_generator
-        self.input_shape = data_generator['input_shape']
-        self.num_class = data_generator['num_class']
-        self.num_support = data_generator['num_support']
+        self.input_shape = input_shape
+        self.num_class = num_class
+        self.num_support = num_support
 
         self.name = name
         self.checkpoint_dir = Path(checkpoint_dir)
@@ -50,7 +49,6 @@ class TextGNN:
 
             gcn2, vars2 = gcn_layer(gcn1, self.support, in_channels=self.num_hidden, out_channels=self.num_class,
                                     keep_pro=self.keep_pro_tensor, is_sparse=False, name='gcn_layer2')
-        # variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
 
         mask = tf.cast(self.labels_mask, dtype=tf.float32)  # Cast masking from boolean to float
         mask /= tf.reduce_mean(mask)  # Compute mean for mask
@@ -75,7 +73,9 @@ class TextGNN:
             accuracy = tf.cast(correct_pred, tf.float32)
             accuracy *= mask  # Apply mask on computed accuracy
             self.accuracy = tf.reduce_mean(accuracy)
+        self.build_summary()
 
+    def build_summary(self):
         with tf.name_scope('tensorboard'):
             loss_scalar = tf.summary.scalar('train_loss', self.loss)
             accuracy_scalar = tf.summary.scalar('train_accuracy', self.accuracy)
@@ -96,36 +96,26 @@ class TextGNN:
         print('开始训练')
         for epoch in range(self.num_epochs):
             # Training step
-            feed_dict = dict()
-            feed_dict.update({self.features: self.data_generator['features']})
-            feed_dict.update(
-                {self.support[i]: self.data_generator['support'][i] for i in range(self.data_generator['num_support'])})
-            feed_dict.update({self.num_nonzero: self.data_generator['num_nonzero']})
+            feed_dict = {self.features: self.data_generator['features'],
+                         self.num_nonzero: self.data_generator['num_nonzero']}
+            feed_dict.update({self.support[i]: self.data_generator['support'][i] for i in range(self.num_support)})
             feed_dict.update({self.labels: self.data_generator['y_train']})
             feed_dict.update({self.labels_mask: self.data_generator['mask_train']})
             feed_dict.update({self.keep_pro_tensor: self.keep_pro})
             _, train_loss, train_accuracy = self.sess.run([optimizer, self.loss, self.accuracy], feed_dict=feed_dict)
 
             # Evaling step
-            feed_dict = dict()
-            feed_dict.update({self.features: self.data_generator['features']})
-            feed_dict.update(
-                {self.support[i]: self.data_generator['support'][i] for i in range(self.data_generator['num_support'])})
-            feed_dict.update({self.num_nonzero: self.data_generator['num_nonzero']})
             feed_dict.update({self.labels: self.data_generator['y_test']})
             feed_dict.update({self.labels_mask: self.data_generator['mask_test']})
             feed_dict.update({self.keep_pro_tensor: 1.0})
-            eval_loss, eval_accuracy, _, _ = self.sess.run([self.loss, self.accuracy, self.target, self.label],
-                                                           feed_dict=feed_dict)
+            eval_loss, eval_accuracy = self.sess.run([self.loss, self.accuracy], feed_dict=feed_dict)
             print('第{}轮训练：train_loss:{},train_accuracy:{},eval_loss:{},eval_accuracy:{}'
                   .format(epoch + 1, train_loss, train_accuracy, eval_loss, eval_accuracy))
             summary = self.sess.run(self.scalar_summary,
-                                    feed_dict={self.loss: train_loss,
-                                               self.accuracy: train_accuracy,
-                                               self.eval_loss: eval_loss,
-                                               self.eval_accuracy: eval_accuracy})
-            writer.add_summary(summary, epoch)
+                                    feed_dict={self.loss: train_loss, self.accuracy: train_accuracy,
+                                               self.eval_loss: eval_loss, self.eval_accuracy: eval_accuracy})
             if epoch % self.save_freq == 0:
+                writer.add_summary(summary, epoch // self.save_freq)
                 self.save(self.checkpoint_dir / 'train', self.train_saver, epoch)
             if best_glob_accuracy < (train_accuracy + eval_accuracy):
                 self.save(self.checkpoint_dir / 'best', self.best_saver, epoch)

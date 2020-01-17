@@ -10,12 +10,15 @@ def train(args):
     tf_config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
     with tf.Session(config=tf_config) as sess:
         data_generator = load_data(args['dataset']['path'], args['dataset']['dataset_name'])
-        model = TextGNN(sess=sess, data_generator=data_generator, **args['dataset'], **args['model'], **args)
+        model = TextGNN(sess=sess, data_generator=data_generator, **data_generator, **args['dataset'], **args['model'],
+                        **args)
         model.train()
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = '3'
-    config = get_config('gnn/aclImdb')
-    config['tag'] = 'my_dataset2'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+    # config = get_config('gnn/aclImdb')
+    # config = get_config('gnn/cnews_voc')
+    config = get_config('gnn/cnews')
+    config['tag'] = 'base'
     train(config)

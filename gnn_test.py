@@ -13,7 +13,8 @@ def evaluate_model(args):
     with tf.Session(config=tf_config) as sess:
         label_dict = csv_utils.read(args['dataset']['path'] + '/labels.csv')
         data_generator = load_data(args['dataset']['path'], args['dataset']['dataset_name'])
-        model = TextGNN(sess=sess, data_generator=data_generator, **args['dataset'], **args['model'], **args)
+        model = TextGNN(sess=sess, data_generator=data_generator, **data_generator, **args['dataset'], **args['model'],
+                        **args)
         result, labels = model.test()
 
         print('评估')
