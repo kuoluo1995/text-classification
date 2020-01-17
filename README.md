@@ -484,7 +484,34 @@ weighted avg       0.99      0.99      0.99      6400
 ```
 2.5 gnn: 
 ```
+              precision    recall  f1-score   support
 
+          游戏       0.99      0.98      0.98       642
+          科技       0.96      0.96      0.96       673
+          体育       1.00      0.99      0.99       656
+          娱乐       0.96      0.97      0.97       663
+          家居       0.92      0.92      0.92       631
+          时尚       0.95      0.96      0.96       632
+          房产       0.93      0.94      0.93       677
+          时政       0.94      0.94      0.94       628
+          财经       0.96      0.94      0.95       661
+          教育       0.92      0.92      0.92       637
+
+    accuracy                           0.95      6500
+   macro avg       0.95      0.95      0.95      6500
+weighted avg       0.95      0.95      0.95      6500
+
+混淆矩阵
+[[626   5   1   3   1   0   1   0   0   5]
+ [  1 645   0   2   0   1   5   7   0  12]
+ [  1   0 651   2   0   0   1   0   0   1]
+ [  1   3   0 646   2   7   0   0   0   4]
+ [  1   1   0   7 582  14  14   2   5   5]
+ [  2   1   0   6  16 605   0   0   0   2]
+ [  2   1   0   0   8   0 633  12  14   7]
+ [  0   2   0   1   1   0  16 592   5  11]
+ [  0   2   0   2  10   3  10  11 619   4]
+ [  1  13   1   6  13   5   4   6   1 587]]
 ```
 #### 3.1.2 英文数据集的结果
 1.cnn: 
@@ -564,23 +591,43 @@ weighted avg       0.91      0.91      0.91      2500
  [ 114 1134]]
 ```
 ### 3.2 训练可视化的结果
-#### 3.2.1 训练集的精确度
-![](images/tensorboard_train_ac.png)
-#### 3.2.2 训练集的loss
-![](images/tensorboard_train_loss.png)
-#### 3.2.3 验证集的精确度
-![](images/tensorboard_eval_ac.png)
-#### 3.2.4 验证集的loss
-![](images/tensorboard_eval_loss.png)
-#### 3.2.5 cnn网络架构
+#### 3.2.1 aclImdb
+##### 3.2.1.1 训练集的精确度
+![](images/tensorboard_train_ac_aclImdb.png)
+##### 3.2.1.2 训练集的loss
+![](images/tensorboard_train_loss_aclImdb.png)
+##### 3.2.1.3 验证集的精确度
+![](images/tensorboard_eval_ac_aclImdb.png)
+##### 3.2.1.4 验证集的loss
+![](images/tensorboard_eval_loss_adlImdb.png)
+#### 3.2.2 cnews
+##### 3.2.2.1 训练集的精确度
+![](images/tensorboard_train_ac_cnews.png)
+##### 3.2.2.2 训练集的loss
+![](images/tensorboard_train_loss_cnews.png)
+##### 3.2.2.3 验证集的精确度
+![](images/tensorboard_eval_ac_cnews.png)
+##### 3.2.2.4 验证集的loss
+![](images/tensorboard_eval_loss_cnews.png)
+#### 3.2.3 cnews_voc
+##### 3.2.3.1 训练集的精确度
+![](images/tensorboard_train_ac_cnews_voc.png)
+##### 3.2.3.2 训练集的loss
+![](images/tensorboard_train_loss_cnews_voc.png)
+##### 3.2.3.3 验证集的精确度
+![](images/tensorboard_eval_ac_cnews_voc.png)
+##### 3.2.3.4 验证集的loss
+![](images/tensorboard_eval_loss_cnews_voc.png)
+#### 3.3 网络架构
+##### 3.3.1 cnn网络架构
 ![](images/cnn_graph.png)
-#### 3.2.6 rnn网络架构
+##### 3.3.2 rnn网络架构
 ![](images/rnn_graph.png)
-#### 3.2.7 adversarial cnn网络架构
+##### 3.3.3 adversarial cnn网络架构
 ![](images/adversarial_cnn_graph.png)
-#### 3.2.8 adversarial rnn网络架构
+##### 3.3.4 adversarial rnn网络架构
 ![](images/adversarial_rnn_graph.png)
-#### 3.2.9 gnn 网络架构
+##### 3.3.5 gnn 网络架构
 ![](images/gcn_graph.png)
 
 ## 4.参考
@@ -592,5 +639,5 @@ weighted avg       0.91      0.91      0.91      2500
 6. [GNN tensorflow和pytorch的实现(不包含构建数据集)](https://github.com/svjan5/GNNs-for-NLP)
 
 # TODO：
-1. 优化结构 cnn,rnn,adversarial build_dataset的代码，用list数组代替正反数据的yaml(减少时间和空间的消耗)
+1. 优化结构 cnn,rnn,adversarial build_dataset的代码，用list数组代替dict的正反词典(减少时间和空间的消耗)
 2. 改良rnn在aclImdb上的结果。

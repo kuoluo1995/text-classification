@@ -25,6 +25,7 @@ def evaluate_model(args):
 
 if __name__ == '__main__':
     # config = get_config('gnn/aclImdb')
-    config = get_config('gnn/cnews')
+    # config = get_config('gnn/cnews')
+    config = get_config('gnn/cnews_voc')
     config['tag'] = 'base'
     evaluate_model(config)
