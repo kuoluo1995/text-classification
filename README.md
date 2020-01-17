@@ -144,20 +144,27 @@ config = get_config('cnn/aclimdb')
 # config = get_config('rnn/aclimdb')
 # config = get_config('adversarial/aclimdb')
 ```
-**注意**: rnn的aclimdb效果不好。还没找到原因
+**注意:** rnn的aclimdb效果不好。还没找到原因
 #### 2.2.2 训练gnn模型
 ```bash
 python gnn_train.py
 ```
+**注意:** 遇到报错:InvalidArgumentError (see above for traceback): Cannot use GPU when output.shape[1] * nnz(a) > 2^31
+
+**解决方案:** 修改`configs/gnn/xxx.yaml`，把里面的`num_hidden`参数调小。或者把gpu换成cpu训练
+```python
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+```
 ##### 2.2.2.1 训练cnews数据
-字典:
+1.字典:
 ```python 
 config = get_config('gnn/cnews')
 ```
-词典:
+2.词典:
 ```python 
 config = get_config('gnn/cnews_voc')
 ```
+**注意:** 词典非常消耗显存很可能只有CPU才能训练
 ##### 2.2.2.2 训练aclimdb数据
 ```python 
 config = get_config('gnn/aclImdb')
@@ -323,32 +330,32 @@ weighted avg       1.00      1.00      1.00      6464
 ```
               precision    recall  f1-score   support
 
-          体育       1.00      1.00      1.00       707
-          娱乐       1.00      1.00      1.00       404
-          家居       1.00      1.00      1.00       909
-          房产       1.00      1.00      1.00       202
-          教育       1.00      1.00      1.00       808
-          时尚       1.00      1.00      1.00       808
-          时政       1.00      1.00      1.00       606
-          游戏       1.00      1.00      1.00       606
-          科技       1.00      1.00      1.00      1111
-          财经       1.00      1.00      1.00       303
+          财经       0.87      0.81      0.84       637
+          游戏       0.88      0.90      0.89       646
+          时政       0.85      0.87      0.86       661
+          娱乐       0.85      0.93      0.89       641
+          科技       0.89      0.89      0.89       673
+          体育       0.97      0.96      0.96       660
+          房产       0.76      0.79      0.78       660
+          家居       0.86      0.74      0.80       644
+          教育       0.81      0.83      0.82       631
+          时尚       0.88      0.90      0.89       647
 
-    accuracy                           1.00      6464
-   macro avg       1.00      1.00      1.00      6464
-weighted avg       1.00      1.00      1.00      6464
+    accuracy                           0.86      6500
+   macro avg       0.86      0.86      0.86      6500
+weighted avg       0.86      0.86      0.86      6500
 
 混淆矩阵
-[[ 707    0    0    0    0    0    0    0    0    0]
- [   0  404    0    0    0    0    0    0    0    0]
- [   0    0  909    0    0    0    0    0    0    0]
- [   0    0    0  202    0    0    0    0    0    0]
- [   0    0    0    0  808    0    0    0    0    0]
- [   0    0    0    0    0  808    0    0    0    0]
- [   0    0    0    0    0    0  606    0    0    0]
- [   0    0    0    0    0    0    0  606    0    0]
- [   0    0    0    0    0    0    0    0 1111    0]
- [   0    0    0    0    0    0    0    0    0  303]]
+[[513   0  17   9   3   1  68  12  14   0]
+ [  1 582   2  13  12   1   0   2  29   4]
+ [  6   6 578   9   8   4  27   3  20   0]
+ [  2  16   3 594   6   6   1   1   4   8]
+ [  0  19   7   3 599   6   4  12  21   2]
+ [  1   8   4  11   3 631   0   0   1   1]
+ [ 57   1  41   3   0   0 519  28  11   0]
+ [  1   2  12  28  10   0  47 477  11  56]
+ [  7  18  16   9  29   2   7   7 526  10]
+ [  0   8   1  19   2   2   6  13  13 583]]
 ```
 2.词典:
 2.1 cnn: 
@@ -477,34 +484,7 @@ weighted avg       0.99      0.99      0.99      6400
 ```
 2.5 gnn: 
 ```
-              precision    recall  f1-score   support
 
-          体育       1.00      1.00      1.00       350
-          娱乐       1.00      1.00      1.00       900
-          家居       1.00      1.00      1.00       500
-          房产       1.00      1.00      1.00       800
-          教育       1.00      1.00      1.00       450
-          时尚       1.00      1.00      1.00       700
-          时政       0.94      1.00      0.97       850
-          游戏       1.00      0.94      0.97       800
-          科技       1.00      1.00      1.00       350
-          财经       1.00      1.00      1.00       700
-
-    accuracy                           0.99      6400
-   macro avg       0.99      0.99      0.99      6400
-weighted avg       0.99      0.99      0.99      6400
-
-混淆矩阵
-[[350   0   0   0   0   0   0   0   0   0]
- [  0 900   0   0   0   0   0   0   0   0]
- [  0   0 500   0   0   0   0   0   0   0]
- [  0   0   0 800   0   0   0   0   0   0]
- [  0   0   0   0 450   0   0   0   0   0]
- [  0   0   0   0   0 700   0   0   0   0]
- [  0   0   0   0   0   0 850   0   0   0]
- [  0   0   0   0   0   0  50 750   0   0]
- [  0   0   0   0   0   0   0   0 350   0]
- [  0   0   0   0   0   0   0   0   0 700]]
 ```
 #### 3.1.2 英文数据集的结果
 1.cnn: 
@@ -602,6 +582,7 @@ weighted avg       0.91      0.91      0.91      2500
 ![](images/adversarial_rnn_graph.png)
 #### 3.2.9 gnn 网络架构
 ![](images/gcn_graph.png)
+
 ## 4.参考
 1. [代码:CNN-RNN中文文本分类](https://github.com/gaussic/text-classification-cnn-rnn)
 2. [adversarial loss tensorflow的官方实现方式](https://github.com/tensorflow/models/tree/master/research/adversarial_text)
@@ -609,3 +590,7 @@ weighted avg       0.91      0.91      0.91      2500
 4. [adversarial loss 多任务的文本分类](https://github.com/FrankWork/fudan_mtl_reviews)
 5. [Graph Convolutional Networks for Text Classification. AAAI 2019的代码实现](https://github.com/yao8839836/text_gcn)
 6. [GNN tensorflow和pytorch的实现(不包含构建数据集)](https://github.com/svjan5/GNNs-for-NLP)
+
+# TODO：
+1. 优化结构 cnn,rnn,adversarial build_dataset的代码，用list数组代替正反数据的yaml(减少时间和空间的消耗)
+2. 改良rnn在aclImdb上的结果。

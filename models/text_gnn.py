@@ -19,7 +19,7 @@ class TextGNN:
         self.num_support = num_support
 
         self.name = name
-        self.checkpoint_dir = Path(checkpoint_dir)
+        self.checkpoint_dir = Path(checkpoint_dir) / self.dataset_name / self.name / self.tag
         self.num_hidden = num_hidden
         self.keep_pro = keep_pro
         self.learning_rate = learning_rate

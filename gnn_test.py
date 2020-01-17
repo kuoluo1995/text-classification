@@ -20,11 +20,11 @@ def evaluate_model(args):
         print('评估')
         print(metrics.classification_report(labels, result, target_names=label_dict))
         print('混淆矩阵')
-        cm = metrics.confusion_matrix(labels, result)
-        print(cm)
+        print(metrics.confusion_matrix(labels, result))
 
 
 if __name__ == '__main__':
-    config = get_config('gnn/aclImdb')
-    config['tag'] = 'my_dataset2'
+    # config = get_config('gnn/aclImdb')
+    config = get_config('gnn/cnews')
+    config['tag'] = 'base'
     evaluate_model(config)

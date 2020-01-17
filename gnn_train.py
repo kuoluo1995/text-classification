@@ -18,7 +18,7 @@ def train(args):
 if __name__ == "__main__":
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     # config = get_config('gnn/aclImdb')
-    # config = get_config('gnn/cnews_voc')
-    config = get_config('gnn/cnews')
+    # config = get_config('gnn/cnews')
+    config = get_config('gnn/cnews_voc')
     config['tag'] = 'base'
     train(config)
