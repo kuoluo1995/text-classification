@@ -6,7 +6,7 @@ dataset:
     dataset_name: aclImdb
     data_generator: multiple_file_data_generator
     path: dataset/aclImdb/info.yaml
-    seq_length: 400  # 序列长度
+    seq_length: 120  # 序列长度
 
 model:
     name: text_rnn
