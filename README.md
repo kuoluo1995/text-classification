@@ -531,19 +531,18 @@ weighted avg       0.90      0.89      0.89      2496
 ```
 2.rnn: 
 ```
-  'precision', 'predicted', average, warn_for)
               precision    recall  f1-score   support
 
-         neg       0.50      1.00      0.67      1248
-         pos       0.00      0.00      0.00      1248
+         neg       0.79      0.84      0.81      1209
+         pos       0.84      0.79      0.81      1287
 
-    accuracy                           0.50      2496
-   macro avg       0.25      0.50      0.33      2496
-weighted avg       0.25      0.50      0.33      2496
+    accuracy                           0.81      2496
+   macro avg       0.81      0.81      0.81      2496
+weighted avg       0.81      0.81      0.81      2496
 
 混淆矩阵
-[[1248    0]
- [1248    0]]
+[[1014  195]
+ [ 273 1014]]
 ```
 3.adversarial cnn: 
 ```
