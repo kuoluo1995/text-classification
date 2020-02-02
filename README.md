@@ -563,16 +563,16 @@ weighted avg       0.93      0.92      0.92      2496
 ```
               precision    recall  f1-score   support
 
-         neg       0.63      0.75      0.69      1248
-         pos       0.69      0.56      0.62      1248
+         neg       0.81      0.84      0.83      1209
+         pos       0.84      0.82      0.83      1287
 
-    accuracy                           0.66      2496
-   macro avg       0.66      0.66      0.65      2496
-weighted avg       0.66      0.66      0.65      2496
+    accuracy                           0.83      2496
+   macro avg       0.83      0.83      0.83      2496
+weighted avg       0.83      0.83      0.83      2496
 
 混淆矩阵
-[[936 312]
- [546 702]]
+[[1014  195]
+ [ 234 1053]]
 ```
 5.gnn: 
 ```
