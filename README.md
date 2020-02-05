@@ -144,7 +144,8 @@ config = get_config('cnn/aclimdb')
 # config = get_config('rnn/aclimdb')
 # config = get_config('adversarial/aclimdb')
 ```
-**注意:** rnn的aclimdb效果不好。还没找到原因
+**注意:** rnn的dataset的seq_length比较小，120的时候可以看到效果。150以后就有可能训练成0.5的准确率了。(不过也可能和配置有关，我之前不同的配置结果差距就很大，大到能影响loss是否能被收敛)
+
 #### 2.2.2 训练gnn模型
 ```bash
 python gnn_train.py
@@ -358,6 +359,7 @@ weighted avg       0.86      0.86      0.86      6500
  [  0   8   1  19   2   2   6  13  13 583]]
 ```
 2.词典:
+
 2.1 cnn: 
 ```
               precision    recall  f1-score   support
@@ -639,4 +641,3 @@ weighted avg       0.91      0.91      0.91      2500
 
 # TODO：
 1. 优化结构 cnn,rnn,adversarial build_dataset的代码，用list数组代替dict的正反词典(减少时间和空间的消耗)
-2. 改良rnn在aclImdb上的结果。
