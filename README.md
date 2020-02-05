@@ -595,12 +595,21 @@ weighted avg       0.91      0.91      0.91      2500
 #### 3.2.1 aclImdb
 ##### 3.2.1.1 训练集的精确度
 ![](images/tensorboard_train_ac_aclImdb.png)
+![](images/rnn_train_ac.png)
 ##### 3.2.1.2 训练集的loss
 ![](images/tensorboard_train_loss_aclImdb.png)
+![](images/rnn_train_loss.png)
 ##### 3.2.1.3 验证集的精确度
 ![](images/tensorboard_eval_ac_aclImdb.png)
+![](images/rnn_eval_ac.png)
 ##### 3.2.1.4 验证集的loss
 ![](images/tensorboard_eval_loss_adlImdb.png)
+![](images/rnn_eval_loss.png)
+
+**注意:**rnn的初始化随机性可能对结果的影响挺大的。理由如下：(除了seq_length不同外，其他全部一致，_2代表是同参数第二次实验的结果)
+
+![](images/rnn_bug.png)
+
 #### 3.2.2 cnews
 ##### 3.2.2.1 训练集的精确度
 ![](images/tensorboard_train_ac_cnews.png)
