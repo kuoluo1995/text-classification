@@ -106,17 +106,20 @@ python scripts/build_gnn_en_dataset.py
 **注意2:** gnn构建英文数据集的速度非常慢，估计要**1到2小时** 
 #### 2.1.4 创建GNN的cnews数据集
 这里也分词典和字典两种
+
 1.字典
 ```bash
 python scripts/build_gnn_cn_dataset.py
 ```
 预处理后的结果保存到dataset/cnews里面。
+
 2.词典
 ```bash
 python scripts/build_gnn_cn_voc_dataset.py
 ```
 预处理后的结果保存到dataset/cnews_voc里面。
-**注意1:** gnn构建中文数据集的速度非常慢，估计要**2到4小时** 
+
+**注意:** gnn构建中文数据集的速度非常慢，估计要**2到4小时** 
 ### 2.2 训练网络
 #### 2.2.1 训练cnn,rnn,adversarial网络
 ```bash
@@ -606,7 +609,7 @@ weighted avg       0.91      0.91      0.91      2500
 ![](images/tensorboard_eval_loss_adlImdb.png)
 ![](images/rnn_eval_loss.png)
 
-**注意:**rnn的初始化随机性可能对结果的影响挺大的。理由如下：(除了seq_length不同外，其他全部一致，_2代表是同参数第二次实验的结果)
+**注意:** rnn的初始化随机性可能对结果的影响挺大的。理由如下：(除了seq_length不同外，其他全部一致，_2代表是同参数第二次实验的结果)
 
 ![](images/rnn_bug.png)
 
